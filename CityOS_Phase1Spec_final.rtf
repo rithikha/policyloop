@@ -1,0 +1,424 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2822
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 Here\'92s the merged Final Tech Spec (Markdown) \'97 it starts from your older, developer-ready spec and inlines the eight edits we discussed, so it\'92s a single, definitive handoff for Codex/engineers.\
+\
+CityOS \'97 Phase 1 Tech Spec (Verifiable Datasets for Policy Teams)\
+\
+Dataset: Taiwan MOENV hourly AQ \'97 Taipei City station only; verifiability substrate for future policy automation.\
+\
+1) Background\
+\
+Problem Statement \'97 what hurts today?\
+\
+Policy teams can\'92t trust upstream open data for evaluation or auto-enforcement of policies (in general) because it lacks proof of authorship, integrity, and timeliness. We need a verifiable input layer so policies can later rely on auditable, machine-checkable datasets.\
+\
+Context / History\
+\
+\uc0\u9679  Phase 1 = verifiable datasets (no policy conditions yet), focused on MOENV \u8594  Taipei station.\
+\
+\uc0\u9679  Phase 2 = policy condition checks & auto-enforcement consuming these proofs.\
+\
+\uc0\u9679  We will mirror dataset/attestation/revocation events to Bluesky (ATProto) and support IPFS for content addressing.\
+\
+\uc0\u9679  Deploy proofs to Sepolia (Ethereum testnet).\
+\
+Stakeholders\
+\
+\uc0\u9679  Publishers: City Admin & Env Dept (model supports both; Phase 1: operate as one publisher wallet).\
+\
+\uc0\u9679  Reviewers: City Env Dept, City Admin, NGO (simulated wallets).\
+\
+\uc0\u9679  Auditor: Oversight role (simulated). \u9679  Policy Team (primary): consumes verified inputs in Phase 2.\
+\
+\uc0\u9679  Public/Researchers: verify locally.\
+\
+2) Motivation\
+\
+Goal (2-week demo)\
+\
+\'93MOENV Taipei dataset \uc0\u8594  on-chain proof (hash+timestamp+publisher) \u8594  k-of-n attestations \u8594  mirrored to ATProto \u8594  anyone can verify locally (WASM) or via API.\'94\
+\
+Success Metrics\
+\
+\uc0\u9679  Median publish\u8594 proof latency.\
+\
+\uc0\u9679  Local verify success rate.\
+\
+\uc0\u9679  % proofs reaching \u8805  k attestations within 24h.\
+\
+\uc0\u9679  Timeliness status: capture\u8594 publish deltas surfaced.\
+\
+\uc0\u9679  ATProto mirror health: % on-chain events mirrored to PDS.\
+\
+3) Scope & Approaches\
+\
+3.1 In-scope (Phase 1)\
+\
+\uc0\u9679  Contracts: PublisherRegistry, OpenDataRegistry, AttestationRegistry, PolicyDataView (read-only helper).\
+\
+\uc0\u9679  Frontend: upload \u8594  schema validate \u8594  EIP-712 sign \u8594  publish \u8594  trust badges \u8594  WASM local verify.\
+\
+\uc0\u9679  Services: /verify API; ATProto PDS mirror (proof/attest/revoke) + Firehose view for custom feed.\
+\
+\uc0\u9679  Infra: IPFS pinning; Sepolia deploy; minimal CI.\
+\
+3.2 Non-Goals (explicitly off-scope now) Technical Functionality\
+\
+Policy condition execution SSI/VC onboarding On-chain payload storage\
+\
+Incentives/economics\
+\
+3.3 Value Proposition\
+\
+Functionality\
+\
+PublisherRegistry\
+\
+OpenDataRegistry\
+\
+AttestationRegistry (k-of-n)\
+\
+Revocation\
+\
+Local Verify (WASM)\
+\
+PolicyDataView (read-only)\
+\
+ATProto Mirror + Firehose\
+\
+Reason\
+\
+Phase 2 Heavy for demo Cost/size\
+\
+Not needed\
+\
+Tradeoffs\
+\
+Keeps demo small & clean Use allowlists now; can upgrade later Store hashes on-chain; files on IPFS/S3 Add rate limits/bonds later if required\
+\
+Value\
+\
+Tradeoffs\
+\
+Prevents spoofing; authorship clarity Immutable proof (hash, time, publisher) Independent review \uc0\u8594  trust tiers\
+\
+Public reasoned invalidation\
+\
+Trust-minimized verification\
+\
+Phase-2 ready consumption\
+\
+Public, followable trail\
+\
+Admin ops to manage\
+\
+Gas costs (low on testnet) Define thresholds & roles\
+\
+Requires auditor governance Chunking UX for large files Small extra surface area\
+\
+Lightweight extra service\
+\
+3.4 Alternative Approaches\
+\
+Approach\
+\
+Central notarization Full SSI/VC now Off-chain DB only\
+\
+Pros\
+\
+Fast Strong ID Simple\
+\
+Cons\
+\
+Re-centralizes trust Heavy lift; slower demo No public auditability/timestamps\
+\
+4) Step-by-Step Flow 4.1 Happy Path\
+\
+1. Pre-condition: Publisher wallet is allowlisted; station schema (taipei-city) configured (schemaUri, policyHash placeholder).\
+\
+2. Actor: Publisher uploads MOENV Taipei dataset; UI validates JSON Schema + license; computes contentHash & metadataHash; requests EIP-712 signature (includes optional publisherDid string for Bluesky).\
+\
+3. System validates: allowlist membership, signature, schema, license.\
+\
+4. System persists/emits: pins file to IPFS; calls OpenDataRegistry.publish(...) \uc0\u8594  stores proof & emits DatasetPublished.\
+\
+5. Attest: Reviewers add attestations \uc0\u8594  when k-of-n met, status becomes Attested.\
+\
+6. Mirror: Publish proof/attestation to ATProto PDS; Firehose view indexes these events into a dedicated feed.\
+\
+7. Verify: User verifies locally (WASM) or via /verify API.\
+\
+4.2 Error / Alternate Paths\
+\
+#\
+\
+Condition\
+\
+Not allowlisted Schema/licence invalid Signature invalid Reviewer not allowed Revocation executed\
+\
+Large file hashing\
+\
+System Action\
+\
+Handling\
+\
+A1 A2 A3 A4 A5\
+\
+A6\
+\
+Revert Block pre-tx Revert Reject Status \uc0\u8594  Revoked Chunk hashing\
+\
+Onboard prompt Inline fix+retry Re-sign Show allowed roles Red banner + reason\
+\
+Progress; fall back to /verify\
+\
+5) UML / Mermaid\
+\
+Class Diagram\
+\
+classDiagram class PublisherRegistry \{ +register(addr, label, role) +deactivate(addr) +isActive(addr) bool\
+\
+\}\
+\
+class OpenDataRegistry \{ +publish(contentHash, metadataHash, uri, version, stationId, sig) returns (bytes32 proofId) +revoke(proofId, reason) +getProof(proofId) Proof +getLatestProof(stationId) bytes32 \}\
+\
+class AttestationRegistry \{ +attest(proofId, note) +getAttestations(proofId) Attestation[] +isAttested(proofId) bool \}\
+\
+class PolicyDataView \{ +latestAttestedProof(stationId) bytes32 +readProof(proofId) Proof +trustScore(proofId) uint8 +trustTier(proofId) TrustTier \}\
+\
+class Proof \{\
+\
++contentHash: bytes32 +metadataHash: bytes32 +publisher: address +publishedAt: uint64 +uri: string +version: string +stationId: string +status: ProofStatus\
+\
+\}\
+\
+PublisherRegistry <.. OpenDataRegistry : allowlist check AttestationRegistry <.. OpenDataRegistry : elevates status PolicyDataView <.. OpenDataRegistry : read-only view\
+\
+Sequence Diagram\
+\
+sequenceDiagram\
+\
+participant Pub as Publisher (Taipei) participant UI as Web App participant PR as PublisherRegistry participant ODR as OpenDataRegistry participant AR as AttestationRegistry participant PDS as ATProto PDS participant FH as ATProto Firehose View participant V as Verifier (WASM/API)\
+\
+Pub->>UI: Upload MOENV Taipei dataset (+ metadata) UI->>UI: Validate schema/license; hash file & metadata UI->>Pub: Request EIP-712 signature (incl. publisherDid) Pub-->>UI: signature UI->>PR: isActive(publisher)?\
+\
+PR-->>UI: true UI->>ODR: publish(contentHash, metadataHash, uri, version, stationId, sig) ODR-->>UI: DatasetPublished(proofId)\
+\
+UI->>PDS: post(proof event) PDS-->>FH: stream (firehose) FH-->>FH: index into custom feed\
+\
+AR->>AR: collect k-of-n attestations\
+\
+AR-->>UI: isAttested(proofId) = true\
+\
+UI->>PDS: post(attestation)\
+\
+V->>ODR: read proof & hashes V-->>V: local hash compare (WASM) / API verify\
+\
+State Diagram\
+\
+stateDiagram\
+\
+[*] --> Submitted Submitted --> Attested : >= k attestations Submitted --> Revoked : revoke() Attested --> Revoked : revoke()\
+\
+6) Edge Cases & Concessions\
+\
+\uc0\u9679  Integrity \u8800  semantic truth; we prove origin, immutability, timeliness.\
+\
+\uc0\u9679  Clock skew: compare dataset capturedAt to block time; parameterized window.\
+\
+\uc0\u9679  Large files: chunk hashing + manifest option; /verify API fallback.\
+\
+\uc0\u9679  Public flagging allowed; only Auditor can revoke(proofId, reason). \u9679  ATProto posts mirror chain events; Firehose custom view provides a followable feed.\
+\
+7) Open Questions (defaults if not overridden)\
+\
+\uc0\u9679  k-of-n: default 2-of-3 reviewers (City Admin, Env Dept, NGO).\
+\
+\uc0\u9679  Timeliness labels (display only): OnTime \u8804 10m, SlightDelay \u8804 30m, Late >30m; thresholds configurable.\
+\
+\uc0\u9679  Publisher model: Phase 1 use single \'93City Publisher\'94 wallet; registry supports multiple.\
+\
+\uc0\u9679  Trust scoring (no role weights): keep composition-based tiers (below).\
+\
+8) Trust Model (no role weights, transparent tiers)\
+\
+Trust Score (0\'96100) computed from attestation composition and audit:\
+\
+\uc0\u9679  +35 per distinct public-sector reviewer (City Admin, Env Dept)\
+\
+\uc0\u9679  +25 per distinct NGO/independent reviewer\
+\
+\uc0\u9679  +15 if timeliness OnTime; +5 if SlightDelay; +0 if Late\
+\
+\uc0\u9679  +20 if Audited (auditor approval)\
+\
+\uc0\u9679  Cap at 100\
+\
+Tiers (surfaced as badges):\
+\
+\uc0\u9679  Submitted (score < 50)\
+\
+\uc0\u9679  Attested (score \u8805  50 AND k-of-n met)\
+\
+\uc0\u9679  EligibleForPolicy (score \u8805  70 AND includes \u8805 1 public-sector & \u8805 1 NGO)\
+\
+\uc0\u9679  Audited (Audited=true; overrides to highest tier) \u9679  Revoked (hard override)\
+\
+(Transparent and visible per dataset; Phase 1 displays them but does not enforce policy consumption.)\
+\
+9) Developer Handoff (AI-ready)\
+\
+9.1 Repo Layout\
+\
+/contracts PublisherRegistry.sol OpenDataRegistry.sol AttestationRegistry.sol PolicyDataView.sol interfaces/*.sol scripts/deploy.ts /frontend pages/* components/* lib/hash.ts // chunked hashing, keccak lib/eip712.ts lib/verify.ts // on-chain read + local compare public/schema/moenv-taipei.json /services verifier-api/ // POST /verify atproto-mirror/ // post chain events to PDS firehose-view/ // subscribes to PDS firehose & emits custom feed /infra ipfs-pin.ts env.example\
+\
+// read-only, trust score calc\
+\
+9.2 Contracts (Solidity Interfaces)\
+\
+// IOpenDataRegistry.sol interface IOpenDataRegistry \{\
+\
+function publish( bytes32 contentHash, bytes32 metadataHash, string calldata uri, // ipfs:// or https:// string calldata version, // semantic version of schema string calldata stationId, // "taipei-city" bytes calldata sig // EIP-712 signature ) external returns (bytes32 proofId); function revoke(bytes32 proofId, string calldata reason) external;\
+\
+function getProof(bytes32 proofId) external view returns ( bytes32, bytes32, address, uint64, string memory, string memory, string memory, uint8 );\
+\
+function getLatestProof(string calldata stationId) external view returns (bytes32);\
+\
+\}\
+\
+Events\
+\
+event DatasetPublished(bytes32 indexed proofId, address indexed publisher, string stationId, uint64 ts); event Attested(bytes32 indexed proofId, address indexed reviewer, string note); event Revoked(bytes32 indexed proofId, address indexed auditor, string reason, uint64 ts);\
+\
+Attestation rule: isAttested(proofId) == true when k-of-n (default 2-of-3) distinct allowlisted reviewers have attested.\
+\
+9.3 EIP-712 Typed Data (TS)\
+\
+export const domain = (chainId:number, verifyingContract:string)=>(\{ name: "CityOS-OpenData", version: "1", chainId, verifyingContract, \});\
+\
+export const types = \{ DatasetMeta: [ \{ name: "stationId", type: "string" \}, // "taipei-city" \{ name: "capturedAt", type: "uint64" \}, // epoch seconds \{ name: "format", type: "string" \}, // json/csv \{ name: "schemaUri", type: "string" \}, // pinned schema link \{ name: "license", type: "string" \}, \{ name: "publisherDid", type: "string" \}, // optional (e.g., Bluesky DID) \{ name: "contentHash", type: "bytes32" \}, ], \};\
+\
+9.4 Hashing (TS)\
+\
+export async function computeHashes(file: File, metadata: object) \{\
+\
+const contentHash = await keccakFileChunked(file); // streaming chunks const metadataHash = keccak256(JSON.stringify(minify(metadata))); return \{ contentHash, metadataHash \}; \}\
+\
+9.5 JSON Schema (MOENV Taipei hourly)\
+\
+\uc0\u9679  stationId (const: "taipei-city"), capturedAt, format, schemaUri, license, optional publisherDid.\
+\
+\uc0\u9679  Payload is pass-through; hash entire file.\
+\
+\uc0\u9679  Store at /frontend/public/schema/moenv-taipei.json.\
+\
+9.6 Verify Flows\
+\
+\uc0\u9679  WASM (browser): recompute contentHash \u8594  compare with getProof result; verify EIP-712 signature for metadata.\
+\
+\uc0\u9679  API: POST /verify \{ url | upload, expectedProofId \} \u8594  \{ verified: boolean, reasons: string[] \}.\
+\
+9.7 ATProto Integration\
+\
+\uc0\u9679  atproto-mirror service:\
+\
+\uc0\u9675  Watches on-chain events (publish/attest/revoke) via RPC subscriptions.\
+\
+\uc0\u9675 \
+\
+Posts signed summaries to PDS as lightweight objects (includes proofId, stationId, hashes, status).\
+\
+\uc0\u9679  firehose-view service:\
+\
+\uc0\u9675  Subscribes to ATProto firehose.\
+\
+\uc0\u9675 \
+\
+Filters CityOS namespace + renders a custom feed (dataset events & policy events later).\
+\
+\uc0\u9679  Env config (.env):\
+\
+\uc0\u9675  ATPROTO_PDS_URL, ATPROTO_HANDLE, ATPROTO_DID, ATPROTO_SIGNING_KEY, CITYOS_NAMESPACE=cityos.dataset.v1\
+\
+9.8 IPFS \uc0\u9679  Pin dataset files; store content CID in uri (prefer ipfs://); HTTPS fallback allowed for demo.\
+\
+9.9 Testnet & Accounts\
+\
+\uc0\u9679  Sepolia deploy; .env for RPC + keys.\
+\
+\uc0\u9679  Seed roles: CITY_PUB, ENV_REVIEWER, CITY_REVIEWER, NGO_REVIEWER,\
+\
+AUDITOR.\
+\
+9.10 Acceptance Criteria (Phase 1)\
+\
+\uc0\u9679  Publish MOENV Taipei dataset \u8594  on-chain proof visible (Submitted).\
+\
+\uc0\u9679  k-of-n attestations elevate to Attested.\
+\
+\uc0\u9679  Revocation works (Auditor only) with public reason.\
+\
+\uc0\u9679  Local WASM verify succeeds.\
+\
+\uc0\u9679  /verify API returns expected result.\
+\
+\uc0\u9679  ATProto PDS receives posts for publish/attest/revoke; firehose view exposes feed.\
+\
+\uc0\u9679  PolicyDataView.latestAttestedProof("taipei-city") returns latest proofId.\
+\
+\uc0\u9679  Trust score/tier displayed in UI.\
+\
+10) Mermaid gitgraph (parallel plan)\
+\
+gitGraph\
+\
+commit id:"init" branch contracts commit id:"publisher-registry" commit id:"open-data-registry" commit id:"attestation-registry" commit id:"policy-data-view"\
+\
+branch frontend commit id:"next-setup" commit id:"schema-validate+upload" commit id:"eip712-sign+publish" commit id:"badges+trust-tier" commit id:"wasm-verify-ui"\
+\
+branch services commit id:"verifier-api" commit id:"atproto-mirror" commit id:"firehose-view"\
+\
+branch infra commit id:"ipfs-pin" commit id:"sepolia-deploy" commit id:"ci"\
+\
+checkout main merge contracts merge frontend merge services merge infra commit id:"phase1-demo-complete"\
+\
+11) Issues (markdown files to create)\
+\
+1. issues/01-contracts.md \'97 Implement PublisherRegistry, OpenDataRegistry, AttestationRegistry, PolicyDataView; events; k-of-n; revoke.\
+\
+2. issues/02-frontend.md \'97 Next.js UI: Upload \uc0\u8594  Schema validate \u8594  EIP-712 sign \u8594  Publish \u8594  Badges + Trust tier \u8594  WASM verify \u8594  ATProto feed widget (from firehose-view).\
+\
+3. issues/03-services.md \'97 /verify API; atproto-mirror (post to PDS); firehose-view (consume stream \uc0\u8594  custom feed); Env vars block (ATProto).\
+\
+4. issues/04-infra.md \'97 IPFS pin util; Sepolia deploy; CI; .env templates (RPC, IPFS, ATProto).\
+\
+5. issues/05-governance.md \'97 Configure allowlists; default 2-of-3 reviewers; Revocation SOP; document Trust tiers; Timeliness thresholds (ON_TIME=600s, SLIGHT_DELAY=1800s, LATE=+\uc0\u8734 ). 12) Abstract Spec (summary block)\
+\
+Project: CityOS Phase 1 \'97 Verifiable Datasets (MOENV Taipei) Intro: Create cryptographic proofs (authorship, integrity, timeliness) for MOENV Taipei hourly AQ datasets, surface public attestations/revocations, mirror to ATProto, enable local/API verification, and expose a read-only policy data view for Phase 2.\
+\
+Problem: Open data lacks verifiability \uc0\u8594  blocks policy evaluation/automation. Diagrams: Class/sequence/state (above).\
+\
+User Flows: Publisher \uc0\u8594  Proof \u8594  Attest \u8594  Mirror \u8594  Verify.\
+\
+13) AI Looping (fallback plan)\
+\
+If hashing/signatures are flaky under load, refactor to streaming workers + deterministic metadata serialization; add golden test vectors; tighten EIP-712 domain separation and verify chainId/contract address checks.\
+\
+Decision Log (Phase-1 defaults)\
+\
+\uc0\u9679  Publishers: model supports multiple; Phase-1 operates as one City Publisher wallet.\
+\
+\uc0\u9679  Attestations: 2-of-3 (City Admin, Env Dept, NGO).\
+\
+\uc0\u9679  Role weights: none; trust score/tiers are composition-based & transparent.\
+\
+\uc0\u9679  Timeliness labels: OnTime \u8804 10m, SlightDelay \u8804 30m, Late >30m (configurable).\
+\
+\uc0\u9679  ATProto: enabled now (mirror posts + firehose custom feed).\
+\
+If you want, I can also generate this as a PDF to match your minimal single-column style (Mermaid code included as text).}
