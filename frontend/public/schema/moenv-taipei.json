@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MOENV Taipei Hourly AQ",
+  "type": "object",
+  "required": [
+    "stationId",
+    "capturedAt",
+    "format",
+    "schemaUri",
+    "license",
+    "payload"
+  ],
+  "properties": {
+    "stationId": {
+      "const": "taipei-city"
+    },
+    "capturedAt": {
+      "type": "integer",
+      "description": "Epoch seconds of data capture"
+    },
+    "format": {
+      "enum": [
+        "json",
+        "csv"
+      ]
+    },
+    "schemaUri": {
+      "type": "string"
+    },
+    "license": {
+      "type": "string"
+    },
+    "publisherDid": {
+      "type": "string"
+    },
+    "payload": {
+      "type": "object"
+    }
+  }
+}

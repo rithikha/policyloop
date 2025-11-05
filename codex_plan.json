@@ -1,0 +1,58 @@
+[
+  {
+    "order": 1,
+    "branch": "contracts",
+    "issue": "issues/01-contracts.md",
+    "tasks": [
+      "Scaffold interfaces",
+      "Implement registries",
+      "Unit tests",
+      "Hardhat deploy script"
+    ]
+  },
+  {
+    "order": 2,
+    "branch": "frontend",
+    "issue": "issues/02-frontend.md",
+    "tasks": [
+      "Next.js scaffold",
+      "Upload+schema",
+      "EIP-712 sign",
+      "Publish flow",
+      "Badges+trust tier",
+      "WASM verify"
+    ]
+  },
+  {
+    "order": 3,
+    "branch": "services",
+    "issue": "issues/03-services.md",
+    "tasks": [
+      "/verify API",
+      "atproto-mirror",
+      "firehose-view"
+    ]
+  },
+  {
+    "order": 4,
+    "branch": "infra",
+    "issue": "issues/04-infra.md",
+    "tasks": [
+      "IPFS pin util",
+      "Sepolia deploy",
+      "CI stubs"
+    ]
+  },
+  {
+    "order": 5,
+    "branch": "governance",
+    "issue": "issues/05-governance.md",
+    "tasks": [
+      "Allowlists",
+      "k-of-n 2-of-3",
+      "Revocation SOP",
+      "Trust mapping",
+      "Timeliness thresholds"
+    ]
+  }
+]
