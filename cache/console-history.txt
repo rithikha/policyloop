@@ -7,6 +7,15 @@ const ROLE_REVIEWER  = 2;
 const ROLE_PUBLISHER = 1;
 );  "0x5FbDB2315678afecb367f032d93F642f64180aa3"  "PublisherRegistry",const publisherRegistry = await ethers.getContractAt(
 const [publisher, reviewer1, reviewer2, reviewer3] = await ethers.getSigners();
+await publisherRegistry.upsertMember(reviewer3.address, "Clean Air NGO", ROLE_REVIEWER, 2, true);
+await publisherRegistry.upsertMember(reviewer2.address, "Env Dept", ROLE_REVIEWER, 1, true);
+await publisherRegistry.upsertMember(reviewer1.address, "City Admin", ROLE_REVIEWER | ROLE_AUDITOR, 1, true);
+await publisherRegistry.upsertMember(publisher.address, "City Publisher", ROLE_PUBLISHER, 0, true);
+const ROLE_AUDITOR   = 4;
+const ROLE_REVIEWER  = 2;
+const ROLE_PUBLISHER = 1;
+);  "0x5FbDB2315678afecb367f032d93F642f64180aa3"  "PublisherRegistry",const publisherRegistry = await ethers.getContractAt(
+const [publisher, reviewer1, reviewer2, reviewer3] = await ethers.getSigners();
 npx hardhat run contracts/scripts/deploy.ts --network localhost
 await publisherRegistry.upsertMember(reviewer3.address, "Clean Air NGO", ROLE_REVIEWER, 2, true);
 await publisherRegistry.upsertMember(reviewer2.address, "Env Dept", ROLE_REVIEWER, 1, true);
