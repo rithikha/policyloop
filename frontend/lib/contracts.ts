@@ -2,9 +2,16 @@ import { Abi, isAddress } from "viem";
 import type { Address } from "viem";
 
 function envAddress(envKey: string): Address | undefined {
-  const value = process.env[envKey];
+  const raw = process.env[envKey];
+  const value = raw ? raw.trim() : "";
   if (!value) return undefined;
-  return isAddress(value) ? (value as Address) : undefined;
+  if (!isAddress(value)) {
+    if (typeof window !== "undefined") {
+      console.warn(`Environment variable ${envKey} is not a valid address: ${value}`);
+    }
+    return undefined;
+  }
+  return value as Address;
 }
 
 export const OPEN_DATA_REGISTRY_ADDRESS = envAddress("NEXT_PUBLIC_OPEN_DATA_REGISTRY");

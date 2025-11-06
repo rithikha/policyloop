@@ -1,0 +1,40 @@
+await publisherRegistry.hasRole(reviewer1.address, ROLE_AUDITOR);
+await publisherRegistry.hasRole(reviewer1.address, ROLE_REVIEWER);
+await publisherRegistry.hasRole(publisher.address, ROLE_PUBLISHER);
+);  true  2,  ROLE_REVIEWER,  "Clean Air NGO",  reviewer3.address,await publisherRegistry.upsertMember(
+);  true  1,  ROLE_REVIEWER,  "Env Dept",  reviewer2.address,await publisherRegistry.upsertMember(
+);  true  1,  ROLE_REVIEWER | ROLE_AUDITOR,  "City Admin",  reviewer1.address,await publisherRegistry.upsertMember(
+);  true  0,  ROLE_PUBLISHER,  "City Publisher",  publisher.address,await publisherRegistry.upsertMember(
+const ROLE_AUDITOR   = 4;
+const ROLE_REVIEWER  = 2;
+const ROLE_PUBLISHER = 1;
+);  "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9"  "PublisherRegistry",const publisherRegistry = await ethers.getContractAt(
+const [publisher, reviewer1, reviewer2, reviewer3] = await ethers.getSigners();
+);  "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9"  "PublisherRegistry",publisherRegistry = await ethers.getContractAt(
+);  "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9"  "PublisherRegistry",const publisherRegistry = await ethers.getContractAt(
+);"0xPublisherRegistryAddress""PublisherRegistry",const publisherRegistry = await ethers.getContractAt(
+const [publisher, reviewer1, reviewer2, reviewer3] = await ethers.getSigners();
+await publisherRegistry.reviewerKindOf(reviewer1.address); // enum value
+await publisherRegistry.hasRole(publisher.address, 1); // ROLE_PUBLISHER
+// returns [active, label, roles, reviewerKind]
+await publisherRegistry.getMember(publisher.address);
+Object.keys(publisherRegistry.interface.functions)
+await publisherRegistry.members(reviewer1.address);
+await publisherRegistry.members(publisher.address);
+);  true  2,     // Ngo  ROLE_REVIEWER,  "Clean Air NGO",  reviewer3.address,await publisherRegistry.upsertMember(
+// Reviewer #3 – NGO
+);  true  1,     // PublicSector  ROLE_REVIEWER,  "Env Dept",  reviewer2.address,await publisherRegistry.upsertMember(
+// Reviewer #2 – public sector (Env Dept)
+);  true  1,     // PublicSector  ROLE_REVIEWER | ROLE_AUDITOR,  // reviewer + auditor  "City Admin",  reviewer1.address,await publisherRegistry.upsertMember(
+// Reviewer #1 – public sector (City Admin)
+);  true   // active  0,     // reviewer kind (0 if not a reviewer)  ROLE_PUBLISHER,  "City Publisher",  publisher.address,await publisherRegistry.upsertMember(
+// Publisher (Account #0 in MetaMask)
+// --- Register members / roles
+const ROLE_AUDITOR   = 4;
+const ROLE_REVIEWER  = 2;
+const ROLE_PUBLISHER = 1;
+// --- Role bitmasks (adjust if your contract defines differently)
+);  "0x5FbDB2315678afecb367f032d93F642f64180aa3"  "PublisherRegistry",const publisherRegistry = await ethers.getContractAt(
+const [publisher, reviewer1, reviewer2, reviewer3] = await ethers.getSigners();
+);  "0x5FbDB2315678afecb367f032d93F642f64180aa3"  "PublisherRegistry",const publisherRegistry = await ethers.getContractAt(
+const [publisher, reviewer1, reviewer2, reviewer3] = await ethers.getSigners();

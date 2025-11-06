@@ -295,7 +295,7 @@ gitGraph
 
 ---
 
-## AI Looping (Fallback Plan)
+## Looping/Error Fallback Plan
 If hashing or signatures fail under load:  
 - Switch to streaming worker hashing and deterministic metadata serialization  
 - Add golden test vectors for hashes and EIP-712 domain  
@@ -309,4 +309,4 @@ If hashing or signatures fail under load:
 - **Role weights:** **none**; trust tiers composition-based & transparent  
 - **Timeliness labels:** OnTime ≤10 m, SlightDelay ≤30 m, Late >30 m (configurable)  
 - **ATProto:** **enabled now** (mirror posts + firehose feed)
->>>>>>> 7a92e42 (scaffold files)
+

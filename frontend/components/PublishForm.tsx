@@ -68,16 +68,19 @@ export function PublishForm() {
     return match?.blockExplorers?.default.url ?? "https://sepolia.etherscan.io";
   }, [chains, chainId, preferredChainId]);
 
-  const canPublish = useMemo(() => {
-    return Boolean(
-      address &&
-        datasetFile &&
-        state.contentHash &&
-        state.metadataHash &&
-        state.datasetMeta &&
-        OPEN_DATA_REGISTRY_ADDRESS
-    );
+  const publishDisabledReason = useMemo(() => {
+    if (!address) return "Connect your wallet to publish.";
+    if (!datasetFile) return "Select a dataset file first.";
+    if (!state.contentHash || !state.metadataHash || !state.datasetMeta) {
+      return "Run Compute Hashes & Validate before publishing.";
+    }
+    if (!OPEN_DATA_REGISTRY_ADDRESS) {
+      return "OpenDataRegistry address missing – check frontend/.env.local and restart the dev server.";
+    }
+    return null;
   }, [address, datasetFile, state]);
+
+  const canPublish = publishDisabledReason === null;
 
   const handleCompute = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
@@ -327,6 +330,9 @@ export function PublishForm() {
             {isSigning || isPublishing ? "Publishing..." : "Sign & Publish"}
           </button>
         </div>
+        {!isSigning && !isPublishing && publishDisabledReason ? (
+          <p className="hint">{publishDisabledReason}</p>
+        ) : null}
       </form>
 
       <div className="form-feedback">

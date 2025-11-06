@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 
 function truncateAddress(address?: string) {
@@ -9,6 +9,11 @@ function truncateAddress(address?: string) {
 }
 
 export function ConnectWallet() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const { address, isConnecting } = useAccount();
   const { connectAsync, connectors, isPending } = useConnect();
   const { disconnect } = useDisconnect();
@@ -27,6 +32,16 @@ export function ConnectWallet() {
       setError(err instanceof Error ? err.message : "Failed to connect wallet");
     }
   };
+
+  if (!mounted) {
+    return (
+      <div className="connect-wallet">
+        <button type="button" onClick={() => null} disabled>
+          Connect Wallet
+        </button>
+      </div>
+    );
+  }
 
   if (address) {
     return (

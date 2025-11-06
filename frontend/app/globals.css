@@ -210,6 +210,12 @@ button {
   font-size: 0.85rem;
 }
 
+.hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  color: #fbbf24;
+}
+
 .card footer {
   display: flex;
   justify-content: flex-end;
