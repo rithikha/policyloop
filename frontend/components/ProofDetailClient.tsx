@@ -136,12 +136,26 @@ export function ProofDetailClient({ proofId }: ProofDetailClientProps) {
             </thead>
             <tbody>
               {data.attestations.map((attestation) => {
-                const profile = reviewerProfiles.find((item) => item.address.toLowerCase() === attestation.reviewer.toLowerCase());
+                const reviewerAddress =
+                  typeof attestation.reviewer === "string"
+                    ? attestation.reviewer
+                    : attestation.reviewer?.toString?.() ?? "";
+                const profile = reviewerProfiles.find(
+                  (item) => item.address.toLowerCase() === reviewerAddress.toLowerCase()
+                );
+                const attestedAtSeconds =
+                  typeof attestation.attestedAt === "bigint"
+                    ? Number(attestation.attestedAt)
+                    : Number(attestation.attestedAt ?? 0);
+                const attestedAtDisplay =
+                  Number.isFinite(attestedAtSeconds) && attestedAtSeconds > 0
+                    ? format(new Date(attestedAtSeconds * 1000), "yyyy-MM-dd HH:mm:ss")
+                    : "—";
                 return (
                   <tr key={`${attestation.reviewer}-${attestation.attestedAt}`}>
                     <td>{profile?.label ?? "Reviewer"}</td>
-                    <td className="mono">{attestation.reviewer}</td>
-                    <td>{format(new Date(attestation.attestedAt * 1000), "yyyy-MM-dd HH:mm:ss")}</td>
+                    <td className="mono">{reviewerAddress}</td>
+                    <td>{attestedAtDisplay}</td>
                     <td>{timelinessLabel(attestation.timeliness)}</td>
                     <td>{attestation.marksAudited ? "Yes" : "No"}</td>
                     <td>{attestation.note}</td>

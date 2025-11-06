@@ -126,9 +126,7 @@ export function AttestationPanel() {
             <div key={profile.address} className="reviewer-card">
               <header>
                 <h3>{profile.label}</h3>
-                <span className={`pill ${profile.kind === "ngo" ? "ngo" : "public"}`}>
-                  {profile.kind === "ngo" ? "NGO" : "Public Sector"}
-                </span>
+                <span className={`pill ${profile.badgeClass}`}>{profile.badgeLabel}</span>
               </header>
               <p className="reviewer-address mono">{profile.address}</p>
               <label className="form-textarea compact">

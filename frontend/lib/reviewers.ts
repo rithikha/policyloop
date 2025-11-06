@@ -1,8 +1,10 @@
-export type ReviewerKind = "public-sector" | "ngo";
+export type ReviewerKind = "public-sector" | "ngo" | "citizen";
 
 export interface ReviewerProfile {
   label: string;
   address: `0x${string}`;
+  badgeLabel: string;
+  badgeClass: "public" | "ngo" | "citizen";
   kind: ReviewerKind;
   defaultNote: string;
   defaultTimeliness: number;
@@ -22,38 +24,44 @@ function envAddress(rawValue: string | undefined, fallback: string, key: string)
 
 export const reviewerProfiles: ReviewerProfile[] = [
   {
-    label: "City Admin",
+    label: "DEP Taipei City",
     address: envAddress(
       process.env.NEXT_PUBLIC_CITY_REVIEWER,
-      "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+      "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
       "NEXT_PUBLIC_CITY_REVIEWER"
     ),
+    badgeLabel: "Public Sector",
+    badgeClass: "public",
     kind: "public-sector",
-    defaultNote: "City Admin review · data cross-checked",
+    defaultNote: "DEP Taipei City verified dataset integrity and timeliness.",
     defaultTimeliness: 1,
     canAudit: true,
   },
   {
-    label: "Env Dept",
+    label: "Green Citizen Alliance",
     address: envAddress(
       process.env.NEXT_PUBLIC_ENV_REVIEWER,
-      "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+      "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
       "NEXT_PUBLIC_ENV_REVIEWER"
     ),
-    kind: "public-sector",
-    defaultNote: "Environmental Department verification",
-    defaultTimeliness: 1,
+    badgeLabel: "NGO",
+    badgeClass: "ngo",
+    kind: "ngo",
+    defaultNote: "Green Citizen Alliance cross-checks readings with independent monitors.",
+    defaultTimeliness: 2,
     canAudit: false,
   },
   {
-    label: "Clean Air NGO",
+    label: "Citizen",
     address: envAddress(
       process.env.NEXT_PUBLIC_NGO_REVIEWER,
-      "0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc",
+      "0x90f79bf6eb2c4f870365e785982e1f101e93b906",
       "NEXT_PUBLIC_NGO_REVIEWER"
     ),
-    kind: "ngo",
-    defaultNote: "NGO partner attested · community sampling aligned",
+    badgeLabel: "Citizen",
+    badgeClass: "citizen",
+    kind: "citizen",
+    defaultNote: "Citizen spot-check attestation backed by community air sensors.",
     defaultTimeliness: 2,
     canAudit: false,
   },

@@ -5,7 +5,7 @@ export async function keccakFileChunked(file: File, chunkSize = 1024 * 1024): Pr
   }
 
   const { createKeccak } = await import("hash-wasm");
-  const hasher = await createKeccak();
+  const hasher = await createKeccak(256);
   hasher.init();
 
   let offset = 0;

@@ -11,6 +11,7 @@ import {
   policyDataViewAbi,
 } from "../lib/contracts";
 import { AttestationSummary, ProofStatus, Timeliness, computeTrustScore, computeTrustTier } from "../lib/trust";
+import { normalizeSummary } from "../lib/attestations";
 
 const ZERO_PROOF = "0x0000000000000000000000000000000000000000000000000000000000000000";
 
@@ -77,29 +78,17 @@ async function fetchLatestProof(publicClient: ReturnType<typeof usePublicClient>
     number,
   ];
 
-  let summary: AttestationSummary = {
-    total: 0,
-    publicCount: 0,
-    ngoCount: 0,
-    audited: false,
-    timeliness: Timeliness.Unknown,
-  };
+  let summary: AttestationSummary = normalizeSummary(undefined);
 
   if (ATTESTATION_REGISTRY_ADDRESS) {
-    const summaryTuple = (await publicClient.readContract({
+    const summaryRaw = await publicClient.readContract({
       address: ATTESTATION_REGISTRY_ADDRESS,
       abi: attestationRegistryAbi,
       functionName: "getSummary",
       args: [proofId],
-    })) as unknown as [bigint, bigint, bigint, boolean, number];
+    });
 
-    summary = {
-      total: Number(summaryTuple[0]),
-      publicCount: Number(summaryTuple[1]),
-      ngoCount: Number(summaryTuple[2]),
-      audited: summaryTuple[3],
-      timeliness: summaryTuple[4] as Timeliness,
-    };
+    summary = normalizeSummary(summaryRaw);
   }
 
   let trustScore = computeTrustScore(summary);

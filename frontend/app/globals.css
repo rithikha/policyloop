@@ -438,6 +438,11 @@ button {
   color: #bbf7d0;
 }
 
+.pill.citizen {
+  background: rgba(168, 85, 247, 0.25);
+  color: #e9d5ff;
+}
+
 .reviewer-address {
   font-size: 0.8rem;
   color: #94a3b8;

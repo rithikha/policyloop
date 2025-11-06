@@ -5,22 +5,16 @@ import {
   useAccount,
   useChainId,
   usePublicClient,
-  useSignTypedData,
+  useSignMessage,
   useSwitchChain,
   useWriteContract,
 } from "wagmi";
 import { sepolia } from "wagmi/chains";
-import {
-  datasetDomain,
-  datasetMetaTypes,
-  DatasetMeta,
-  OPEN_DATA_REGISTRY_ADDRESS,
-  openDataRegistryAbi,
-} from "../lib/contracts";
+import { computeDatasetDigest, DatasetMeta, OPEN_DATA_REGISTRY_ADDRESS, openDataRegistryAbi } from "../lib/contracts";
 import { keccakFileChunked, computeMetadataHash } from "../lib/hash";
 import { validateMetadata } from "../lib/schema";
 import { ConnectWallet } from "./ConnectWallet";
-import { Hex, parseEventLogs } from "viem";
+import { Address, Hex, parseEventLogs } from "viem";
 
 interface PublishFormState {
   contentHash?: `0x${string}`;
@@ -29,6 +23,7 @@ interface PublishFormState {
   datasetMeta?: DatasetMeta;
   txHash?: Hex;
   proofId?: `0x${string}`;
+  signature?: Hex;
 }
 
 interface PublishFormErrors {
@@ -43,7 +38,7 @@ export function PublishForm() {
   const chainId = useChainId();
   const { chains, switchChainAsync } = useSwitchChain();
   const publicClient = usePublicClient();
-  const { signTypedDataAsync, isPending: isSigning } = useSignTypedData();
+  const { signMessageAsync, isPending: isSigning } = useSignMessage();
   const { writeContractAsync, isPending: isPublishing } = useWriteContract();
 
   const [datasetFile, setDatasetFile] = useState<File | null>(null);
@@ -77,6 +72,8 @@ export function PublishForm() {
     if (!mounted) return "Connect your wallet to publish.";
     if (!address) return "Connect your wallet to publish.";
     if (!datasetFile) return "Select a dataset file first.";
+    if (!uri.trim()) return "Enter a dataset URI before publishing.";
+    if (!version.trim()) return "Specify the dataset version before publishing.";
     if (!state.contentHash || !state.metadataHash || !state.datasetMeta) {
       return "Run Compute Hashes & Validate before publishing.";
     }
@@ -84,7 +81,7 @@ export function PublishForm() {
       return "OpenDataRegistry address missing – check frontend/.env.local and restart the dev server.";
     }
     return null;
-  }, [address, datasetFile, state, mounted]);
+  }, [address, datasetFile, state, mounted, uri, version]);
 
   const canPublish = mounted && publishDisabledReason === null;
 
@@ -171,6 +168,11 @@ export function PublishForm() {
       return;
     }
 
+    if (!address) {
+      setErrors({ general: "Connect your wallet to publish datasets." });
+      return;
+    }
+
     try {
       const registryAddress = OPEN_DATA_REGISTRY_ADDRESS;
       let activeChainId = chainId ?? preferredChainId;
@@ -190,22 +192,26 @@ export function PublishForm() {
       }
 
       setErrors({});
-      setStatusMessage("Requesting EIP-712 signature...");
+      setStatusMessage("Requesting signature...");
 
-      const typedData = {
-        DatasetMeta: datasetMetaTypes.DatasetMeta.map((field) => ({ ...field })),
-      };
-
-      const signature = await signTypedDataAsync({
-        domain: datasetDomain(activeChainId, registryAddress),
-        primaryType: "DatasetMeta",
-        types: typedData,
-        message: {
-          ...state.datasetMeta,
-          publisherDid: state.datasetMeta.publisherDid ?? "",
-          capturedAt: BigInt(state.datasetMeta.capturedAt),
-        },
+      const digest = computeDatasetDigest({
+        contentHash: state.contentHash,
+        metadataHash: state.metadataHash,
+        uri,
+        version,
+        stationId: state.datasetMeta.stationId,
+        publisher: address as Address,
+        registry: registryAddress,
       });
+
+      const signature = await signMessageAsync({
+        message: { raw: digest },
+      });
+
+      setState((prev) => ({
+        ...prev,
+        signature,
+      }));
 
       setStatusMessage("Publishing dataset on-chain...");
 
@@ -245,9 +251,19 @@ export function PublishForm() {
         }
       }
     } catch (err) {
-      setErrors({
-        general: err instanceof Error ? err.message : "Failed to publish dataset.",
-      });
+      const message = err instanceof Error ? err.message : "Failed to publish dataset.";
+      if (message.includes("OpenDataRegistry: not publisher")) {
+        setErrors({
+          general:
+            "This wallet is not registered as a publisher. Rerun the deploy script (which seeds members) or add the address via PublisherRegistry.upsertMember.",
+        });
+      } else if (message.includes("OpenDataRegistry: invalid signature")) {
+        setErrors({
+          general: "Signature check failed. Make sure you signed the prompt in MetaMask and try again.",
+        });
+      } else {
+        setErrors({ general: message });
+      }
     }
   };
 
@@ -353,6 +369,11 @@ export function PublishForm() {
             <strong>metadataHash:</strong> {state.metadataHash}
           </p>
         ) : null}
+        {state.signature ? (
+          <p>
+            <strong>publisherSignature:</strong> {state.signature}
+          </p>
+        ) : null}
         {state.txHash ? (
           <p>
             <strong>txHash:</strong>{" "}
@@ -369,6 +390,12 @@ export function PublishForm() {
           <p>
             <strong>proofId:</strong> {state.proofId}
           </p>
+        ) : null}
+        {state.metadataDoc ? (
+          <details>
+            <summary>View metadata JSON</summary>
+            <pre className="mono metadata-json">{JSON.stringify(state.metadataDoc, null, 2)}</pre>
+          </details>
         ) : null}
         {errors.general ? <p className="error">{errors.general}</p> : null}
         {errors.schema ? (

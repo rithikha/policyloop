@@ -151,12 +151,12 @@ This service is tracked under `issues/03-services.md` (task: `ingest-moev`). It 
 
 ## Defaults / Governance
 
-- **Publishers:** model supports multiple; Phase 1 uses one _City Publisher_ wallet.  
-- **Reviewers:** City Admin, Env Dept, NGO (simulated wallets).  
+- **Publishers:** model supports multiple; Phase 1 uses one _Ministry of Environment_ wallet.  
+- **Reviewers:** DEP Taipei City, Green Citizen Alliance, Citizen (simulated wallets).  
 - **k-of-n:** **2-of-3** required for **Attested**.  
 - **Revocation:** Auditor-only; public reason stored on-chain.  
 - **Trust score (0–100):**
-  - +35 per public-sector reviewer (City Admin, Env Dept)  
+  - +35 per public-sector reviewer (Ministry / DEP Taipei City)  
   - +25 per NGO reviewer  
   - +15 OnTime (≤10 m), +5 SlightDelay (≤30 m), +0 Late  
   - +20 if Audited = true  

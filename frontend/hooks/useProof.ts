@@ -8,15 +8,8 @@ import {
   attestationRegistryAbi,
   openDataRegistryAbi,
 } from "../lib/contracts";
-import { AttestationSummary, Timeliness } from "../lib/trust";
-
-export interface AttestationDetail {
-  reviewer: `0x${string}`;
-  attestedAt: number;
-  note: string;
-  timeliness: Timeliness;
-  marksAudited: boolean;
-}
+import { AttestationSummary } from "../lib/trust";
+import { AttestationDetail, normalizeAttestations, normalizeSummary } from "../lib/attestations";
 
 export interface ProofDetailData {
   proofId: `0x${string}`;
@@ -57,52 +50,27 @@ async function fetchProofDetail(publicClient: ReturnType<typeof usePublicClient>
     args: [proofId],
   })) as unknown as number;
 
-  let summary: AttestationSummary = {
-    total: 0,
-    publicCount: 0,
-    ngoCount: 0,
-    audited: false,
-    timeliness: Timeliness.Unknown,
-  };
+  let summary: AttestationSummary = normalizeSummary(undefined);
   let attestations: AttestationDetail[] = [];
 
   if (ATTESTATION_REGISTRY_ADDRESS) {
-    const [summaryTuple, attestationTuples] = await Promise.all([
+    const [summaryRaw, attestationRaw] = await Promise.all([
       publicClient.readContract({
         address: ATTESTATION_REGISTRY_ADDRESS,
         abi: attestationRegistryAbi,
         functionName: "getSummary",
         args: [proofId],
-      }) as unknown as Promise<[bigint, bigint, bigint, boolean, number]>,
+      }),
       publicClient.readContract({
         address: ATTESTATION_REGISTRY_ADDRESS,
         abi: attestationRegistryAbi,
         functionName: "getAttestations",
         args: [proofId],
-      }) as unknown as Promise<[
-        `0x${string}`,
-        bigint,
-        string,
-        number,
-        boolean
-      ][]>,
+      }),
     ]);
 
-    summary = {
-      total: Number(summaryTuple[0]),
-      publicCount: Number(summaryTuple[1]),
-      ngoCount: Number(summaryTuple[2]),
-      audited: summaryTuple[3],
-      timeliness: summaryTuple[4] as Timeliness,
-    };
-
-    attestations = attestationTuples.map((item) => ({
-      reviewer: item[0],
-      attestedAt: Number(item[1]),
-      note: item[2],
-      timeliness: item[3] as Timeliness,
-      marksAudited: item[4],
-    }));
+    summary = normalizeSummary(summaryRaw);
+    attestations = normalizeAttestations(attestationRaw);
   }
 
   let revocation: ProofDetailData["revocation"];

@@ -92,10 +92,34 @@ describe("Registry workflow", () => {
     const reviewerRole = Number(await publisherRegistry.ROLE_REVIEWER());
     const auditorRole = Number(await publisherRegistry.ROLE_AUDITOR());
 
-    await publisherRegistry.upsertMember(publisher.address, "City Publisher", publisherRole, 0, true);
-    await publisherRegistry.upsertMember(reviewer1.address, "City Admin", reviewerRole | auditorRole, 1, true);
-    await publisherRegistry.upsertMember(reviewer2.address, "Env Dept", reviewerRole | auditorRole, 1, true);
-    await publisherRegistry.upsertMember(reviewer3.address, "Clean Air NGO", reviewerRole, 2, true);
+    await publisherRegistry.upsertMember(
+      publisher.address,
+      "Ministry of Environment",
+      publisherRole,
+      0,
+      true
+    );
+    await publisherRegistry.upsertMember(
+      reviewer1.address,
+      "DEP Taipei City",
+      reviewerRole | auditorRole,
+      1,
+      true
+    );
+    await publisherRegistry.upsertMember(
+      reviewer2.address,
+      "Green Citizen Alliance",
+      reviewerRole,
+      2,
+      true
+    );
+    await publisherRegistry.upsertMember(
+      reviewer3.address,
+      "Citizen",
+      reviewerRole,
+      2,
+      true
+    );
 
     return {
       deployer,
@@ -276,12 +300,12 @@ describe("Registry workflow", () => {
 
     const summary = await attestationRegistry.getSummary(proofId);
     expect(summary.total).to.equal(3);
-    expect(summary.publicCount).to.equal(2);
-    expect(summary.ngoCount).to.equal(1);
+    expect(summary.publicCount).to.equal(1);
+    expect(summary.ngoCount).to.equal(2);
   });
 
   it("supports auditor-led revocation with public reason", async () => {
-    const { publisher, reviewer2, openDataRegistry, attestationRegistry, policyDataView } = await loadFixture(
+    const { publisher, reviewer1, openDataRegistry, attestationRegistry, policyDataView } = await loadFixture(
       deployFixture
     );
 
@@ -311,15 +335,15 @@ describe("Registry workflow", () => {
       signature
     );
 
-    await expect(openDataRegistry.connect(reviewer2).revoke(proofId, "Incorrect readings"))
+    await expect(openDataRegistry.connect(reviewer1).revoke(proofId, "Incorrect readings"))
       .to.emit(openDataRegistry, "Revoked")
-      .withArgs(proofId, reviewer2.address, "Incorrect readings", anyValue);
+      .withArgs(proofId, reviewer1.address, "Incorrect readings", anyValue);
 
     const status = await openDataRegistry.statusOf(proofId);
     expect(status).to.equal(ProofStatus.Revoked);
 
     const revocation = await openDataRegistry.revocation(proofId);
-    expect(revocation.auditor).to.equal(reviewer2.address);
+    expect(revocation.auditor).to.equal(reviewer1.address);
     expect(revocation.reason).to.equal("Incorrect readings");
     expect(revocation.revokedAt).to.be.gt(0);
 
@@ -330,7 +354,7 @@ describe("Registry workflow", () => {
     expect(latestAttested).to.equal(ethers.ZeroHash);
 
     await expect(
-      attestationRegistry.connect(reviewer2).attest(proofId, "Attempt after revoke", Timeliness.OnTime, false)
+      attestationRegistry.connect(reviewer1).attest(proofId, "Attempt after revoke", Timeliness.OnTime, false)
     ).to.be.revertedWith("AttestationRegistry: proof revoked");
   });
 });

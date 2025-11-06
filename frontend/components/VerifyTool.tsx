@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { usePublicClient } from "wagmi";
-import { verifyTypedData } from "ethers";
-import { datasetDomain, datasetMetaTypes, DatasetMeta, openDataRegistryAbi, OPEN_DATA_REGISTRY_ADDRESS } from "../lib/contracts";
+import { getBytes, verifyMessage } from "ethers";
+import { computeDatasetDigest, DatasetMeta, openDataRegistryAbi, OPEN_DATA_REGISTRY_ADDRESS } from "../lib/contracts";
 import { keccakFileChunked, computeMetadataHash } from "../lib/hash";
 
 interface VerificationResult {
@@ -12,6 +12,10 @@ interface VerificationResult {
   signerMatch: boolean;
   publisher: `0x${string}`;
   signer?: string;
+  expectedContentHash: `0x${string}`;
+  computedContentHash: `0x${string}`;
+  expectedMetadataHash: `0x${string}`;
+  computedMetadataHash: `0x${string}`;
 }
 
 export function VerifyTool() {
@@ -24,6 +28,7 @@ export function VerifyTool() {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
+  const allPassed = result ? result.contentMatch && result.metadataMatch && result.signerMatch : false;
 
   const handleVerify = async () => {
     if (!publicClient) {
@@ -43,7 +48,7 @@ export function VerifyTool() {
       return;
     }
     if (!signature) {
-      setErrorMessage("Provide the publisher's EIP-712 signature.");
+      setErrorMessage("Provide the publisher's signature from the publish step.");
       return;
     }
 
@@ -60,7 +65,16 @@ export function VerifyTool() {
         args: [proofId],
       });
 
-      const [contentHash, metadataHash, publisher] = proof as [`0x${string}`, `0x${string}`, `0x${string}`, bigint, string, string, string, number];
+      const [contentHash, metadataHash, publisher, , uri, version, stationId] = proof as [
+        `0x${string}`,
+        `0x${string}`,
+        `0x${string}`,
+        bigint,
+        string,
+        string,
+        string,
+        number
+      ];
 
       const computedContentHash = await keccakFileChunked(datasetFile);
 
@@ -73,10 +87,8 @@ export function VerifyTool() {
 
       const computedMetadataHash = computeMetadataHash(parsedMetadata);
 
-      const chainId = await publicClient.getChainId();
-
       const datasetMeta: DatasetMeta = {
-        stationId: String(parsedMetadata.stationId ?? ""),
+        stationId: String(parsedMetadata.stationId ?? stationId ?? ""),
         capturedAt: BigInt(Number(parsedMetadata.capturedAt ?? 0)),
         format: (parsedMetadata.format as DatasetMeta["format"]) ?? "csv",
         schemaUri: String(parsedMetadata.schemaUri ?? ""),
@@ -89,12 +101,16 @@ export function VerifyTool() {
         throw new Error("Metadata document missing required fields (stationId, schemaUri, license).");
       }
 
-      const expectedDomain = datasetDomain(chainId, registryAddress);
-      const typedData = {
-        DatasetMeta: datasetMetaTypes.DatasetMeta.map((field) => ({ ...field })),
-      };
-
-      const signer = verifyTypedData(expectedDomain, typedData, datasetMeta, signature);
+      const digest = computeDatasetDigest({
+        contentHash,
+        metadataHash,
+        uri,
+        version,
+        stationId,
+        publisher,
+        registry: registryAddress,
+      });
+      const signer = verifyMessage(getBytes(digest), signature);
 
       const verificationResult: VerificationResult = {
         contentMatch: computedContentHash.toLowerCase() === contentHash.toLowerCase(),
@@ -102,14 +118,18 @@ export function VerifyTool() {
         signerMatch: signer.toLowerCase() === publisher.toLowerCase(),
         publisher,
         signer,
+        expectedContentHash: contentHash,
+        computedContentHash,
+        expectedMetadataHash: metadataHash,
+        computedMetadataHash,
       };
 
       setResult(verificationResult);
 
       if (verificationResult.contentMatch && verificationResult.metadataMatch && verificationResult.signerMatch) {
-        setStatusMessage("Verification succeeded — dataset & metadata match on-chain proof.");
+        setStatusMessage("Verification successful — all hashes and signature match the on-chain proof.");
       } else {
-        setStatusMessage("Verification incomplete — see mismatch details below.");
+        setStatusMessage("Verification failed — see highlighted mismatches below.");
       }
     } catch (err) {
       setErrorMessage(err instanceof Error ? err.message : "Verification failed");
@@ -136,10 +156,12 @@ export function VerifyTool() {
         <label className="form-textarea">
           <span>Metadata JSON</span>
           <textarea rows={6} value={metadataJson} onChange={(event) => setMetadataJson(event.target.value)} />
+          <p className="hint">Tip: copy this from the publish card’s “View metadata JSON” panel.</p>
         </label>
         <label className="form-field">
-          <span>EIP-712 Signature</span>
+          <span>Publisher Signature (eth_sign digest)</span>
           <input type="text" value={signature} onChange={(event) => setSignature(event.target.value as `0x${string}`)} />
+          <p className="hint">Use the signature shown in the publish card (publisherSignature) right after signing.</p>
         </label>
         <div className="form-actions">
           <button type="button" className="primary" onClick={handleVerify} disabled={isVerifying}>
@@ -148,19 +170,30 @@ export function VerifyTool() {
         </div>
       </div>
       <div className="form-feedback">
-        {statusMessage ? <span className="status">{statusMessage}</span> : null}
+        {statusMessage ? <span className={allPassed ? "status" : "error"}>{statusMessage}</span> : null}
         {errorMessage ? <span className="error">{errorMessage}</span> : null}
         {result ? (
           <div className="verification-summary">
             <p>
               Content Hash Match: <strong>{result.contentMatch ? "✅" : "❌"}</strong>
+              {!result.contentMatch ? (
+                <span className="hint">
+                  Expected {result.expectedContentHash}, computed {result.computedContentHash}
+                </span>
+              ) : null}
             </p>
             <p>
               Metadata Hash Match: <strong>{result.metadataMatch ? "✅" : "❌"}</strong>
+              {!result.metadataMatch ? (
+                <span className="hint">
+                  Expected {result.expectedMetadataHash}, computed {result.computedMetadataHash}
+                </span>
+              ) : null}
             </p>
             <p>
-              Signature Signer ({result.signer})<br />
-              Matches Publisher ({result.publisher}): <strong>{result.signerMatch ? "✅" : "❌"}</strong>
+              Signature signer: <span className="mono">{result.signer ?? "Unknown"}</span>
+              <br />
+              Matches publisher ({result.publisher}): <strong>{result.signerMatch ? "✅" : "❌"}</strong>
             </p>
           </div>
         ) : null}

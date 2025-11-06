@@ -1,5 +1,5 @@
-import { Abi, isAddress } from "viem";
-import type { Address } from "viem";
+import { Abi, encodeAbiParameters, isAddress, keccak256, stringToBytes } from "viem";
+import type { Address, Hex } from "viem";
 
 function envAddress(rawValue: string | undefined, envKey: string): Address | undefined {
   const raw = rawValue;
@@ -40,6 +40,20 @@ export const openDataRegistryAbi = [
     name: "publish",
     outputs: [{ internalType: "bytes32", name: "proofId", type: "bytes32" }],
     stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      { internalType: "bytes32", name: "contentHash", type: "bytes32" },
+      { internalType: "bytes32", name: "metadataHash", type: "bytes32" },
+      { internalType: "string", name: "uri", type: "string" },
+      { internalType: "string", name: "version", type: "string" },
+      { internalType: "string", name: "stationId", type: "string" },
+      { internalType: "address", name: "publisher", type: "address" }
+    ],
+    name: "datasetDigest",
+    outputs: [{ internalType: "bytes32", name: "", type: "bytes32" }],
+    stateMutability: "view",
     type: "function"
   },
   {
@@ -231,6 +245,48 @@ export const datasetMetaTypes = {
     { name: "contentHash", type: "bytes32" }
   ]
 } as const;
+
+const DATASET_TYPEHASH = keccak256(
+  stringToBytes(
+    "Dataset(bytes32 contentHash,bytes32 metadataHash,string uri,string version,string stationId,address publisher,address registry)"
+  )
+);
+
+export function computeDatasetDigest(params: {
+  contentHash: Hex;
+  metadataHash: Hex;
+  uri: string;
+  version: string;
+  stationId: string;
+  publisher: Address;
+  registry: Address;
+}): Hex {
+  const { contentHash, metadataHash, uri, version, stationId, publisher, registry } = params;
+  return keccak256(
+    encodeAbiParameters(
+      [
+        { type: "bytes32" },
+        { type: "bytes32" },
+        { type: "bytes32" },
+        { type: "bytes32" },
+        { type: "bytes32" },
+        { type: "bytes32" },
+        { type: "address" },
+        { type: "address" },
+      ],
+      [
+        DATASET_TYPEHASH,
+        contentHash,
+        metadataHash,
+        keccak256(stringToBytes(uri)),
+        keccak256(stringToBytes(version)),
+        keccak256(stringToBytes(stationId)),
+        publisher,
+        registry,
+      ]
+    )
+  );
+}
 
 export function datasetDomain(chainId: number, verifyingContract: Address) {
   return {
