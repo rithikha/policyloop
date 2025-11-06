@@ -128,6 +128,8 @@ stateDiagram
 /infra
   ipfs-pin.ts
   env.example
+/docs
+  local-hardhat.md
 ```
 
 ---
