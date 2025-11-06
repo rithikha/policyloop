@@ -28,6 +28,7 @@
     "branch": "services",
     "issue": "issues/03-services.md",
     "tasks": [
+      "Automated MOENV fetch + publisher signer",
       "/verify API",
       "atproto-mirror",
       "firehose-view"

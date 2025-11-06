@@ -56,4 +56,8 @@ Use the addresses printed in the deploy step. Restart the Next.js dev server aft
 
 Use one of the funded Hardhat accounts for the publisher wallet. Upsert reviewer and auditor accounts via `PublisherRegistry.upsertMember` so that the attestation panel in the UI can submit approvals.
 
+## 5. (Optional) Run the automated ingest script
+
+When the `ingest-moev` service (see issues/03-services.md) is ready, run it against the same Hardhat node to fetch MOENV data, hash/sign it, and publish proofs automatically. The service will reuse the publisher key and contract addresses you set in `.env.local`.
+
 You can now exercise the full manual publish → attest → verify workflow against the local network. To reset the environment, stop the node, restart `npx hardhat node`, and rerun the deploy script.

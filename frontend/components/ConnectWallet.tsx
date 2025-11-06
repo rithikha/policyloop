@@ -62,4 +62,6 @@ export function ConnectWallet() {
       {error ? <span className="error">{error}</span> : null}
     </div>
   );
+  console.log("OpenDataRegistry", process.env.NEXT_PUBLIC_OPEN_DATA_REGISTRY);
+
 }

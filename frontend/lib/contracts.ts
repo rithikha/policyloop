@@ -1,8 +1,8 @@
 import { Abi, isAddress } from "viem";
 import type { Address } from "viem";
 
-function envAddress(envKey: string): Address | undefined {
-  const raw = process.env[envKey];
+function envAddress(rawValue: string | undefined, envKey: string): Address | undefined {
+  const raw = rawValue;
   const value = raw ? raw.trim() : "";
   if (!value) return undefined;
   if (!isAddress(value)) {
@@ -14,9 +14,18 @@ function envAddress(envKey: string): Address | undefined {
   return value as Address;
 }
 
-export const OPEN_DATA_REGISTRY_ADDRESS = envAddress("NEXT_PUBLIC_OPEN_DATA_REGISTRY");
-export const ATTESTATION_REGISTRY_ADDRESS = envAddress("NEXT_PUBLIC_ATTESTATION_REGISTRY");
-export const POLICY_DATA_VIEW_ADDRESS = envAddress("NEXT_PUBLIC_POLICY_DATA_VIEW");
+export const OPEN_DATA_REGISTRY_ADDRESS = envAddress(
+  process.env.NEXT_PUBLIC_OPEN_DATA_REGISTRY,
+  "NEXT_PUBLIC_OPEN_DATA_REGISTRY"
+);
+export const ATTESTATION_REGISTRY_ADDRESS = envAddress(
+  process.env.NEXT_PUBLIC_ATTESTATION_REGISTRY,
+  "NEXT_PUBLIC_ATTESTATION_REGISTRY"
+);
+export const POLICY_DATA_VIEW_ADDRESS = envAddress(
+  process.env.NEXT_PUBLIC_POLICY_DATA_VIEW,
+  "NEXT_PUBLIC_POLICY_DATA_VIEW"
+);
 
 export const openDataRegistryAbi = [
   {

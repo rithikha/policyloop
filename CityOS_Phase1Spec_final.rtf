@@ -47,6 +47,8 @@ Success Metrics\
 \
 \uc0\u9679  Median publish\u8594 proof latency.\
 \
+\uc0\u9679  Automated ingest latency: new MOENV snapshot published on-chain within 5 min.\
+\
 \uc0\u9679  Local verify success rate.\
 \
 \uc0\u9679  % proofs reaching \u8805  k attestations within 24h.\
@@ -62,6 +64,8 @@ Success Metrics\
 \uc0\u9679  Contracts: PublisherRegistry, OpenDataRegistry, AttestationRegistry, PolicyDataView (read-only helper).\
 \
 \uc0\u9679  Frontend: upload \u8594  schema validate \u8594  EIP-712 sign \u8594  publish \u8594  trust badges \u8594  WASM local verify.\
+\
+\uc0\u9679  Automated ingest service: poll MOENV Taipei feed, validate JSON schema, hash \u8594  sign via publisher key, publish proof with IPFS URI.\
 \
 \uc0\u9679  Services: /verify API; ATProto PDS mirror (proof/attest/revoke) + Firehose view for custom feed.\
 \

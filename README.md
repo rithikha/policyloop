@@ -65,6 +65,7 @@ classDiagram
 ```mermaid
 sequenceDiagram
   participant Pub as Publisher (Taipei)
+  participant Auto as Fetch+Publish Service
   participant UI as Web App
   participant PR as PublisherRegistry
   participant ODR as OpenDataRegistry
@@ -73,15 +74,15 @@ sequenceDiagram
   participant FH as ATProto Firehose View
   participant V as Verifier (WASM/API)
 
-  Pub->>UI: Upload MOENV Taipei dataset (+ metadata)
-  UI->>UI: Validate schema/license; hash file & metadata
-  UI->>Pub: Request EIP-712 signature (incl. publisherDid)
-  Pub-->>UI: signature
-  UI->>PR: isActive(publisher)?
-  PR-->>UI: true
-  UI->>ODR: publish(contentHash, metadataHash, uri, version, stationId, sig)
+  Auto->>Pub: Fetch MOENV Taipei dataset (+ metadata)
+  Auto->>Auto: Validate schema/license; hash file &amp; metadata
+  Auto->>Pub: Request EIP-712 signature (incl. publisherDid)
+  Pub-->>Auto: signature
+  Auto->>ODR: publish(contentHash, metadataHash, uri, version, stationId, sig)
   ODR-->>UI: DatasetPublished(proofId)
 
+  UI->>PR: isActive(publisher)?
+  PR-->>UI: true
   UI->>PDS: post(proof event)
   PDS-->>FH: stream (firehose)
   FH-->>FH: index into custom feed
@@ -90,7 +91,7 @@ sequenceDiagram
   AR-->>UI: isAttested(proofId) = true
   UI->>PDS: post(attestation)
 
-  V->>ODR: read proof & hashes
+  V->>ODR: read proof &amp; hashes
   V-->>V: local hash compare (WASM) / API verify
 ```
 
@@ -130,6 +131,20 @@ stateDiagram
   env.example
 /docs
   local-hardhat.md
+
+## Automation roadmap (Phase 1+)
+
+In addition to the manual “Sign & Publish” demo, the production workflow introduces an automated fetcher that:
+
+1. Polls MOENV hourly air-quality data for Taipei City.
+2. Validates the payload against `public/schema/moenv-taipei.json`.
+3. Reuses the hashing helpers in `frontend/lib/hash.ts` to produce `contentHash` and `metadataHash`.
+4. Signs the EIP-712 `DatasetMeta` message with the ministry’s publisher key (`datasetMetaTypes` in `frontend/lib/contracts.ts`).
+5. Pins the dataset to IPFS and calls `OpenDataRegistry.publish(...)` with the signature and CID.
+
+This service is tracked under `issues/03-services.md` (task: `ingest-moev`). It runs alongside the upcoming `/verify` API and ATProto mirror, while attestations remain policy-governed (2-of-3 reviewers).
+/docs
+  local-hardhat.md
 ```
 
 ---
@@ -150,7 +165,7 @@ stateDiagram
 
 ---
 
-## Data & Schema
+## Data and Schema
 
 - Dataset: **MOENV hourly air quality — Taipei City**  
 - Store full file in **IPFS**; record `uri` (ipfs://CID) + `contentHash`  
@@ -161,7 +176,7 @@ stateDiagram
 ## Verify
 
 - **Local (WASM):** recompute `contentHash` in-browser → compare to on-chain → verify EIP-712 signature  
-- **API (/verify):** accept URL/upload → recompute → return `{ verified, reasons[] }` (for CI & DX)
+- **API (/verify):** accept URL/upload → recompute → return `{ verified, reasons[] }` (for CI and DX)
 
 ---
 
@@ -248,7 +263,7 @@ export async function computeHashes(file: File, metadata: object) {
 - **Local WASM verify + /verify API** return true  
 - **ATProto mirror + Firehose** feed functional  
 - `PolicyDataView.latestAttestedProof("taipei-city")` returns proofId  
-- UI displays trust score & tier  
+- UI displays trust score and tier  
 
 ---
 
@@ -306,7 +321,6 @@ If hashing or signatures fail under load:
 ### Decision Log (Phase 1 Defaults)
 - **Publishers:** multiple supported; Phase-1 uses **one City Publisher**  
 - **Attestations:** **2-of-3** (City Admin, Env Dept, NGO)  
-- **Role weights:** **none**; trust tiers composition-based & transparent  
+- **Role weights:** **none**; trust tiers composition-based and transparent  
 - **Timeliness labels:** OnTime ≤10 m, SlightDelay ≤30 m, Late >30 m (configurable)  
 - **ATProto:** **enabled now** (mirror posts + firehose feed)
-

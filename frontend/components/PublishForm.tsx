@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
   useAccount,
   useChainId,
@@ -59,6 +59,11 @@ export function PublishForm() {
   const [errors, setErrors] = useState<PublishFormErrors>({});
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isComputing, setIsComputing] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const preferredChainId = Number(process.env.NEXT_PUBLIC_CHAIN_ID ?? `${sepolia.id}`);
 
@@ -69,6 +74,7 @@ export function PublishForm() {
   }, [chains, chainId, preferredChainId]);
 
   const publishDisabledReason = useMemo(() => {
+    if (!mounted) return "Connect your wallet to publish.";
     if (!address) return "Connect your wallet to publish.";
     if (!datasetFile) return "Select a dataset file first.";
     if (!state.contentHash || !state.metadataHash || !state.datasetMeta) {
@@ -78,9 +84,9 @@ export function PublishForm() {
       return "OpenDataRegistry address missing – check frontend/.env.local and restart the dev server.";
     }
     return null;
-  }, [address, datasetFile, state]);
+  }, [address, datasetFile, state, mounted]);
 
-  const canPublish = publishDisabledReason === null;
+  const canPublish = mounted && publishDisabledReason === null;
 
   const handleCompute = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
