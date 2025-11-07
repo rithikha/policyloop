@@ -123,9 +123,10 @@ stateDiagram
   lib/verify.ts
   public/schema/moenv-taipei.json
 /services
-  verifier-api/           # POST /verify
+  verify-api/             # POST /verify (hash+signature check)
+  ingest-moev/            # pulls MOENV payloads, hashes, signs, publishes proofs
   atproto-mirror/         # posts chain events to PDS
-  firehose-view/          # reads PDS firehose -> custom feed
+  firehose-view/          # polls ATProto mirror handle -> exposes JSON feed for frontend
 /infra
   ipfs-pin.ts
   env.example

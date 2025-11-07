@@ -48,17 +48,25 @@ export function FeedWidget() {
         <p className="error">Feed unavailable: {error instanceof Error ? error.message : String(error)}</p>
       ) : data && data.length > 0 ? (
         <ul className="feed-list">
-          {data.map((item) => (
-            <li key={item.id}>
-              <div className={`feed-pill feed-${item.type}`}>{item.type.toUpperCase()}</div>
+          {data.map((item) => {
+            const typeLabel = (item.type ?? "event").toUpperCase();
+            const station = item.stationId ?? "unknown station";
+            const timestamp =
+              item.timestamp > 1_000_000_000_000
+                ? new Date(item.timestamp)
+                : new Date(item.timestamp * 1000);
+            return (
+              <li key={item.id}>
+                <div className={`feed-pill feed-${item.type ?? "event"}`}>{typeLabel}</div>
               <div className="feed-body">
-                <p className="feed-summary">{item.summary ?? `${item.type} · proof ${item.proofId}`}</p>
+                <p className="feed-summary">{item.summary ?? `${typeLabel} · proof ${item.proofId ?? "unknown"}`}</p>
                 <p className="feed-meta">
-                  Station {item.stationId} · {item.actor ?? "unknown actor"} · {formatDistanceToNowStrict(new Date(item.timestamp * 1000), { addSuffix: true })}
+                  Station {station} · {item.actor ?? "unknown actor"} · {formatDistanceToNowStrict(timestamp, { addSuffix: true })}
                 </p>
               </div>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
       ) : (
         <p>No mirrored events found yet.</p>

@@ -1,3 +1,4 @@
+await ethers.provider.getCode("0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512")
 await publisherRegistry.upsertMember(reviewer3.address, "Clean Air NGO", ROLE_REVIEWER, 2, true);
 await publisherRegistry.upsertMember(reviewer2.address, "Env Dept", ROLE_REVIEWER, 1, true);
 await publisherRegistry.upsertMember(reviewer1.address, "City Admin", ROLE_REVIEWER | ROLE_AUDITOR, 1, true);
