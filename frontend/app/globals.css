@@ -539,3 +539,70 @@ button {
   color: #f87171;
   font-size: 0.85rem;
 }
+
+.pipeline-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.pipeline-steps li {
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.pipeline-steps li.status-success {
+  border-color: rgba(34, 197, 94, 0.5);
+  background: rgba(22, 101, 52, 0.25);
+}
+
+.pipeline-steps li.status-error {
+  border-color: rgba(248, 113, 113, 0.5);
+  background: rgba(127, 29, 29, 0.3);
+}
+
+.pipeline-step-title {
+  font-weight: 600;
+}
+
+.pipeline-step-meta {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  color: #cbd5f5;
+}
+
+.pipeline-step-details {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+}
+
+.ingest-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.ingest-meta div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.ingest-meta dt {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+}
+
+.ingest-meta dd {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #e2e8f0;
+  word-break: break-all;
+}

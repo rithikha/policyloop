@@ -258,11 +258,12 @@ export async function computeHashes(file: File, metadata: object) {
 
 ## Acceptance Criteria
 
-- Publish MOENV Taipei dataset → on-chain **proof (Submitted)**  
-- **2-of-3 attestations → Attested**  
-- **Revocation (Auditor-only)** records public reason  
-- **Local WASM verify + /verify API** return true  
-- **ATProto mirror + Firehose** feed functional  
+- Publish MOENV Taipei dataset → on-chain **proof (Submitted)**
+- **2-of-3 attestations → Attested**
+- **Revocation (Auditor-only)** records public reason
+- **Local WASM verify + /verify API** return true
+- **ATProto mirror + Firehose** feed functional
+- **Automated ingest** fetches MOENV data, pins to IPFS, and surfaces status in the dashboard
 - `PolicyDataView.latestAttestedProof("taipei-city")` returns proofId  
 - UI displays trust score and tier  
 

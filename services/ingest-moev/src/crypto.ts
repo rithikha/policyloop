@@ -35,7 +35,7 @@ export function computeDatasetDigest(params: {
 }
 
 export function computeMetadataHash(metadata: Record<string, unknown>): `0x${string}` {
-  const normalized = normalize(metadata);
+  const normalized = normalize(metadata as JsonValue);
   const json = JSON.stringify(normalized);
   return keccak256(toUtf8Bytes(json)) as `0x${string}`;
 }

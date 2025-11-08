@@ -6,12 +6,14 @@ import { VerifyTool } from "../components/VerifyTool";
 import { FeedWidget } from "../components/FeedWidget";
 import { AppShell } from "../components/AppShell";
 import { EnvironmentGuard } from "../components/EnvironmentGuard";
+import { IngestStatusCard } from "../components/IngestStatusCard";
 
 export default function HomePage() {
   return (
     <AppShell>
       <EnvironmentGuard>
         <div className="page-grid">
+          <IngestStatusCard />
           <PublishForm />
           <ProofExplorer />
           <AttestationPanel />

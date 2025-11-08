@@ -1,6 +1,6 @@
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { Contract, JsonRpcProvider, Wallet, keccak256, getBytes } from "ethers";
+import { Contract, JsonRpcProvider, Wallet, keccak256, getBytes, type LogDescription, type Log } from "ethers";
 import { fetch } from "undici";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
@@ -9,6 +9,29 @@ import type { IngestConfig } from "./config";
 import { computeDatasetDigest, computeMetadataHash } from "./crypto";
 import { openDataRegistryAbi } from "./registry";
 import { pinToIpfs } from "./ipfs";
+
+type StepName = "fetchDataset" | "validateMetadata" | "pinDataset" | "publishProof";
+
+interface StepEntry {
+  name: StepName;
+  status: "success" | "error";
+  timestamp: string;
+  details?: string;
+}
+
+interface PipelineStatus {
+  datasetUrl?: string;
+  datasetFile?: string;
+  startedAt: string;
+  completedAt?: string;
+  datasetUri?: string;
+  contentHash?: `0x${string}`;
+  metadataHash?: `0x${string}`;
+  proofId?: string;
+  txHash?: string;
+  error?: string;
+  steps: StepEntry[];
+}
 
 interface MetadataDoc {
   stationId: string;
@@ -21,63 +44,144 @@ interface MetadataDoc {
   payload: Record<string, unknown>;
 }
 
+const STATUS_PATH = path.resolve(__dirname, "../../../artifacts/ingest/status.json");
+
+async function ensureStatusDir() {
+  await mkdir(path.dirname(STATUS_PATH), { recursive: true });
+}
+
+async function savePipelineStatus(status: PipelineStatus) {
+  await ensureStatusDir();
+  await writeFile(STATUS_PATH, JSON.stringify(status, null, 2), "utf8");
+}
+
+async function recordStep(
+  status: PipelineStatus,
+  name: StepName,
+  stepStatus: "success" | "error",
+  details?: string
+) {
+  const entry: StepEntry = {
+    name,
+    status: stepStatus,
+    timestamp: new Date().toISOString(),
+    details
+  };
+  status.steps = status.steps.filter((step) => step.name !== name).concat(entry);
+  await savePipelineStatus(status);
+}
+
 async function main() {
   const config = getConfig();
   const provider = new JsonRpcProvider(config.RPC_URL, config.CHAIN_ID);
   const signer = new Wallet(config.PUBLISHER_KEY, provider);
   const registry = new Contract(config.OPEN_DATA_REGISTRY_ADDRESS, openDataRegistryAbi, signer);
 
-  const datasetBuffer = await loadDatasetBuffer(config.DATASET_URL, config.DATASET_FILE);
-  const datasetJson = parseDataset(datasetBuffer, config.DATASET_FORMAT);
+  const pipelineStatus: PipelineStatus = {
+    datasetUrl: config.DATASET_URL,
+    datasetFile: config.DATASET_FILE,
+    startedAt: new Date().toISOString(),
+    steps: []
+  };
+  await savePipelineStatus(pipelineStatus);
 
-  const metadataDoc = buildMetadataDoc(datasetBuffer, datasetJson, config);
-  await validateMetadata(metadataDoc, config.SCHEMA_PATH);
+  let currentStep: StepName | null = null;
+  let datasetBuffer: Buffer;
+  let datasetJson: Record<string, unknown>;
+  let metadataDoc: MetadataDoc;
 
-  const contentHash = metadataDoc.contentHash;
-  const metadataHash = computeMetadataHash(metadataDoc);
-  const datasetUri = await persistDataset(datasetBuffer, contentHash, config);
+  try {
+    currentStep = "fetchDataset";
+    datasetBuffer = await loadDatasetBuffer(config.DATASET_URL, config.DATASET_FILE);
+    datasetJson = parseDataset(datasetBuffer, config.DATASET_FORMAT);
+    const records = Array.isArray((datasetJson as { records?: unknown[] }).records)
+      ? ((datasetJson as { records?: unknown[] }).records as unknown[]).length
+      : undefined;
+    await recordStep(
+      pipelineStatus,
+      "fetchDataset",
+      "success",
+      records != null ? `Fetched ${records} records` : "Fetched dataset"
+    );
 
-  const digest = computeDatasetDigest({
-    contentHash,
-    metadataHash,
-    uri: datasetUri,
-    version: config.DATASET_VERSION,
-    stationId: config.STATION_ID,
-    publisher: signer.address as `0x${string}`,
-    registry: config.OPEN_DATA_REGISTRY_ADDRESS
-  });
-  const signature = await signer.signMessage(getBytes(digest));
+    currentStep = "validateMetadata";
+    metadataDoc = buildMetadataDoc(datasetBuffer, datasetJson, config);
+    await validateMetadata(metadataDoc, config.SCHEMA_PATH);
+    await recordStep(pipelineStatus, "validateMetadata", "success", "Metadata schema validation passed");
 
-  console.log("Submitting publish transaction…");
-  const tx = await registry.publish(
-    contentHash,
-    metadataHash,
-    datasetUri,
-    config.DATASET_VERSION,
-    config.STATION_ID,
-    signature
-  );
-  const receipt = await tx.wait();
+    currentStep = "pinDataset";
+    const contentHash = metadataDoc.contentHash;
+    const metadataHash = computeMetadataHash(metadataDoc as unknown as Record<string, unknown>);
+    const datasetUri = await persistDataset(datasetBuffer, contentHash, config);
+    pipelineStatus.contentHash = contentHash;
+    pipelineStatus.metadataHash = metadataHash;
+    pipelineStatus.datasetUri = datasetUri;
+    await recordStep(pipelineStatus, "pinDataset", "success", `Pinned to ${datasetUri}`);
 
-  const proofId = receipt.logs
-    .map((log) => {
-      try {
-        return registry.interface.parseLog(log);
-      } catch {
-        return null;
-      }
-    })
-    .filter(Boolean)
-    .find((parsed) => parsed?.name === "DatasetPublished")?.args?.proofId;
+    currentStep = "publishProof";
+    const digest = computeDatasetDigest({
+      contentHash,
+      metadataHash,
+      uri: datasetUri,
+      version: config.DATASET_VERSION,
+      stationId: config.STATION_ID,
+      publisher: signer.address as `0x${string}`,
+      registry: config.OPEN_DATA_REGISTRY_ADDRESS
+    });
+    const signature = await signer.signMessage(getBytes(digest));
 
-  console.log("Dataset published.");
-  console.table({
-    proofId: proofId ?? "n/a",
-    txHash: receipt.hash,
-    uri: datasetUri,
-    contentHash,
-    metadataHash
-  });
+    console.log("Submitting publish transaction…");
+    const tx = await registry.publish(
+      contentHash,
+      metadataHash,
+      datasetUri,
+      config.DATASET_VERSION,
+      config.STATION_ID,
+      signature
+    );
+    const receipt = await tx.wait();
+
+    const parsedLogs = receipt.logs
+      .map((log: Log): LogDescription | null => {
+        try {
+          return registry.interface.parseLog(log);
+        } catch {
+          return null;
+        }
+      })
+      .filter((entry: LogDescription | null): entry is LogDescription => entry !== null);
+
+    const proofId = parsedLogs.find((entry: LogDescription) => entry.name === "DatasetPublished")?.args?.proofId;
+    pipelineStatus.proofId = proofId;
+    pipelineStatus.txHash = receipt.hash;
+    pipelineStatus.completedAt = new Date().toISOString();
+    await recordStep(
+      pipelineStatus,
+      "publishProof",
+      "success",
+      proofId ? `Proof ${proofId}` : "Proof published"
+    );
+    await savePipelineStatus(pipelineStatus);
+
+    console.log("Dataset published.");
+    console.table({
+      proofId: proofId ?? "n/a",
+      txHash: receipt.hash,
+      uri: datasetUri,
+      contentHash,
+      metadataHash
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    pipelineStatus.error = message;
+    pipelineStatus.completedAt = new Date().toISOString();
+    if (currentStep) {
+      await recordStep(pipelineStatus, currentStep, "error", message);
+    } else {
+      await savePipelineStatus(pipelineStatus);
+    }
+    throw err;
+  }
 }
 
 async function loadDatasetBuffer(url?: string, filePath?: string) {

@@ -8,3 +8,4 @@ frontend/.next/
 frontend/out/
 
 **/.DS_Store
+artifacts/ingest/status.json
