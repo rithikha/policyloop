@@ -4,7 +4,8 @@
   "description": "<<<<<<< HEAD # policyloop FtC policy loop demo ======= # CityOS — Phase 1: Verifiable Datasets (MOENV Taipei)",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev:all": "bash scripts/dev-all.sh"
   },
   "repository": {
     "type": "git",

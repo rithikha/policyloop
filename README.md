@@ -148,6 +148,62 @@ This service is tracked under `issues/03-services.md` (task: `ingest-moev`). It 
   local-hardhat.md
 ```
 
+## Phase 1 service runbook
+
+### Run everything at once
+```
+npm run dev:all
+```
+This script starts the local Hardhat node and, once it’s listening on `127.0.0.1:8545`, launches:
+- `services/ingest-moev`
+- `services/verify-api`
+- `services/atproto-mirror`
+- `services/firehose-view`
+- `frontend`
+
+Press `Ctrl+C` to stop all processes. Make sure each package has its `.env` configured before using the bundle.
+
+### Automated ingest (`services/ingest-moev`)
+- `cp services/ingest-moev/.env.example services/ingest-moev/.env` and fill in:
+  - Hardhat RPC (`RPC_URL=http://127.0.0.1:8545`, `CHAIN_ID=31337`)
+  - Contract addresses from `npx hardhat run contracts/scripts/deploy.ts`
+  - `PUBLISHER_KEY` (the allowlisted publisher wallet – first Hardhat account by default)
+  - `DATASET_URL` pointing at MOENV `aqx_p_432` with your `api_key`
+  - Optional `IPFS_API_URL`, `IPFS_API_AUTH`, `IPFS_GATEWAY` (Pinata/web3.storage/etc.)
+- `cd services/ingest-moev && npm install && npm run dev`
+- Every run fetches MOENV → validates schema → pins to IPFS → publishes → writes `artifacts/ingest/status.json`
+- The dashboard’s “Automated Publish Pipeline” card reads this status file, so you can watch each backend step complete in real time.
+
+### `/verify` API (`services/verify-api`)
+- `cp services/verify-api/.env.example services/verify-api/.env` and set:
+  - RPC settings, `OPEN_DATA_REGISTRY_ADDRESS`, `CHAIN_ID`
+  - `PORT` (default `4000`)
+- `cd services/verify-api && npm install && npm run dev`
+- Health check: `curl http://localhost:4000/healthz`
+- Verification example:
+  ```bash
+  curl -X POST http://localhost:4000/verify \
+    -F proofId=0x... \
+    -F metadata='{"stationId":"taipei-city",...}' \
+    -F dataset=@/path/to/dataset.json
+  ```
+
+### ATProto mirror (`services/atproto-mirror`)
+- Requires an ATProto/Bluesky handle and app password dedicated to CityOS.
+- `.env` fields:
+  - `RPC_URL`/`CHAIN_ID`, contract addresses
+  - `ATPROTO_PDS_URL` (e.g., `https://bsky.social`)
+  - `ATPROTO_HANDLE` (full handle, e.g., `cityos-taipei.bsky.social`)
+  - `ATPROTO_APP_PASSWORD`, `CITYOS_NAMESPACE`
+  - Optional `STATION_ALLOWLIST`
+- Run with `npm install && npm run dev`. Keep it running to mirror publish/attest/revoke events to your PDS.
+
+### Firehose view (`services/firehose-view`)
+- Points at the same ATProto handle to expose a JSON feed for the frontend.
+- `.env` fields: `PORT` (default `4100`), `ATPROTO_*` creds, `CITYOS_NAMESPACE`, `POLL_INTERVAL_MS`, `FEED_LIMIT`.
+- Start with `npm install && npm run dev`. Check `http://localhost:4100/healthz` and `http://localhost:4100/feed`.
+- Set `NEXT_PUBLIC_FIREHOSE_VIEW_URL=http://localhost:4100/feed` in `frontend/.env.local` so the dashboard’s “ATProto Feed Mirror” card renders live posts.
+
 ---
 
 ## Defaults / Governance
@@ -163,6 +219,19 @@ This service is tracked under `issues/03-services.md` (task: `ingest-moev`). It 
   - +20 if Audited = true  
   - Capped at 100  
 - **Tiers:** Submitted (< 50), Attested (≥ 50 + k-of-n met), EligibleForPolicy (≥ 70 + ≥ 1 public + ≥ 1 NGO), Audited (Auditor approved), Revoked.
+
+### Allowlist configuration (local Hardhat defaults)
+- `contracts/scripts/deploy.ts` seeds the registries so the app works out of the box:
+  | Label                   | Hardhat signer index | Roles                                     |
+  | ----------------------- | -------------------- | ----------------------------------------- |
+  | Ministry of Environment | #0 (`deployer`)      | `ROLE_PUBLISHER`                          |
+  | DEP Taipei City         | #1                   | `ROLE_REVIEWER` + `ROLE_AUDITOR` (Public) |
+  | Green Citizen Alliance  | #2                   | `ROLE_REVIEWER` (NGO)                     |
+  | Citizen (Community)     | #3                   | `ROLE_REVIEWER` (NGO)                     |
+- The AttestationRegistry enforces **2-of-3** reviewers per proof; at least one public-sector reviewer (DEP) and one NGO reviewer (GCA/Citizen) are required before the trust tier can advance to “Eligible for Policy.”
+- Only reviewers that also have `ROLE_AUDITOR` (DEP Taipei City by default) can mark a dataset as **Audited** or call `OpenDataRegistry.revoke`.
+- Timeliness labels are derived from reviewer attestations: `OnTime ≤ 10 min`, `SlightDelay ≤ 30 min`, `Late > 30 min`. These feed into the trust-score weights listed above.
+- Revocations must include a human-readable reason; Proof Explorer and the ATProto mirror surface the auditor address + message for transparency.
 
 ---
 
