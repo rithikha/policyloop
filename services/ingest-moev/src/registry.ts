@@ -16,6 +16,13 @@ export const openDataRegistryAbi = [
     type: "function"
   },
   {
+    inputs: [],
+    name: "publisherRegistry",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
     anonymous: false,
     inputs: [
       { indexed: true, internalType: "bytes32", name: "proofId", type: "bytes32" },
@@ -29,3 +36,16 @@ export const openDataRegistryAbi = [
 ] as const;
 
 export type OpenDataRegistry = Contract;
+
+export const publisherRegistryAbi = [
+  {
+    inputs: [
+      { internalType: "address", name: "account", type: "address" },
+      { internalType: "uint8", name: "role", type: "uint8" }
+    ],
+    name: "hasRole",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function"
+  }
+] as const;

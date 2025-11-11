@@ -606,3 +606,111 @@ button {
   color: #e2e8f0;
   word-break: break-all;
 }
+
+.program-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.program-stat {
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 0.9rem;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.program-stat__title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.program-stat__description {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #9aa9c1;
+}
+
+.program-stat__metrics {
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.program-stat__metrics div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.program-stat__metrics dt {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+}
+
+.program-stat__metrics dd {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.ledger-meta {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.ledger-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.ledger-entry {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.ledger-entry__pill {
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.ledger-entry__pill[data-kind="PayoutExecuted"] {
+  background: rgba(16, 185, 129, 0.15);
+  color: #86efac;
+}
+
+.ledger-entry__pill[data-kind="EligibilityIssued"] {
+  background: rgba(59, 130, 246, 0.15);
+  color: #bfdbfe;
+}
+
+.ledger-entry__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.ledger-entry__title {
+  font-weight: 600;
+}
+
+.ledger-entry__meta {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  flex-wrap: wrap;
+}

@@ -1,0 +1,22 @@
+program:
+  id: "TAIPEI_AQI_FUND"
+  name: "Taipei AQI Fund"
+  description: "Phase 2 pilots for IoT sensors, EV retrofits, and fixed-site remediation."
+  currency: "NTD"
+  capNTD: 3000000
+  version: 2
+phase1:
+  adapter: "PolicyDataViewAdapter"
+  proofsSource: "onchain"
+  addressesFile: "config/programs/phase1.addresses.json"
+ledger:
+  output: "frontend/policy-ledger/ledger.json"
+  log: "frontend/policy-ledger/ledger.log"
+sensors:
+  aqi:
+    dataset: "config/programs/aqi_demo.json"
+    expectedFields:
+      - stationId
+      - aqi
+      - pm25
+      - ts

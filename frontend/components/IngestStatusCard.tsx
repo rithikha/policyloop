@@ -1,6 +1,7 @@
 "use client";
 
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
+import { useState } from "react";
 import { formatDistanceToNowStrict } from "date-fns";
 
 interface StepEntry {
@@ -42,9 +43,29 @@ async function fetchStatus(): Promise<PipelineStatus> {
 }
 
 export function IngestStatusCard() {
+  const { mutate } = useSWRConfig();
   const { data, error, isLoading } = useSWR(["ingest-status"], fetchStatus, {
     refreshInterval: 30_000
   });
+  const [isTriggering, setIsTriggering] = useState(false);
+  const [triggerError, setTriggerError] = useState<string | null>(null);
+
+  const triggerIngest = async () => {
+    setIsTriggering(true);
+    setTriggerError(null);
+    try {
+      const res = await fetch("/api/ingest-run", { method: "POST" });
+      const body = await res.json();
+      if (!res.ok || !body.ok) {
+        throw new Error(body.error ?? "Failed to run ingest pipeline.");
+      }
+      await mutate(["ingest-status"]);
+    } catch (err) {
+      setTriggerError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setIsTriggering(false);
+    }
+  };
 
   const steps = data?.steps ?? [];
 
@@ -52,6 +73,9 @@ export function IngestStatusCard() {
     <section className="card">
       <header className="card-header">
         <h2>1. Automated Publish Pipeline</h2>
+        <button className="link-button" onClick={triggerIngest} disabled={isTriggering}>
+          {isTriggering ? "Running…" : "Run pipeline"}
+        </button>
       </header>
       {isLoading ? (
         <p>Loading ingest status…</p>
@@ -110,6 +134,7 @@ export function IngestStatusCard() {
             )}
           </ul>
           {data?.error ? <p className="error">Last run error: {data.error}</p> : null}
+          {triggerError ? <p className="error">Manual run failed: {triggerError}</p> : null}
         </>
       )}
     </section>

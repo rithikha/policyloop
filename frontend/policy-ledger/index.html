@@ -1,0 +1,1239 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Taipei AQI Fund · Policy Metabolism</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #020510;
+        --bg-alt: radial-gradient(circle at top, rgba(56, 189, 248, 0.09), transparent 55%);
+        --text: #f8fafc;
+        --muted: #a1a8c7;
+        --muted-strong: #7c82a7;
+        --card: rgba(15, 18, 40, 0.92);
+        --card-soft: rgba(26, 32, 65, 0.75);
+        --border: rgba(148, 163, 184, 0.25);
+        --accent: #8b5cf6;
+        --accent-2: #38bdf8;
+        --eligibility: #60a5fa;
+        --payout: #34d399;
+        --danger: #f87171;
+        --warning: #facc15;
+        --success: #34d399;
+        --stage-standard: #facc15;
+        --stage-enforcement: #60a5fa;
+        --stage-timing: #34d399;
+        --stage-money: #f97316;
+        font-family: "Space Grotesk", "Inter", "Segoe UI", system-ui, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: clamp(1.5rem, 4vw, 4rem);
+        background: var(--bg);
+        background-image: var(--bg-alt);
+        color: var(--text);
+      }
+
+      .hero {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 2rem;
+      }
+
+      .eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 0.3em;
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2rem, 5vw, 3.5rem);
+      }
+
+      .hero-subtitle {
+        max-width: 840px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .metabolism-bar {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: minmax(240px, 320px) 1fr;
+        margin-bottom: 2.5rem;
+      }
+
+      @media (max-width: 820px) {
+        .metabolism-bar {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .class-banner {
+        border-radius: 18px;
+        padding: 1.5rem;
+        border: 1px solid var(--border);
+        background: var(--card);
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .class-status {
+        font-size: 1.4rem;
+        font-weight: 700;
+      }
+
+      .chips {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.75rem;
+        align-content: start;
+      }
+
+      .chip {
+        border-radius: 16px;
+        padding: 1rem 1.2rem;
+        border: 1px solid var(--border);
+        background: var(--card);
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        position: relative;
+      }
+
+      .chip[data-stage="sensing"]::after,
+      .chip[data-stage="decision"]::after,
+      .chip[data-stage="action"]::after,
+      .chip[data-stage="feedback"]::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        opacity: 0.15;
+        border-radius: 16px;
+        pointer-events: none;
+      }
+
+      .chip[data-stage="sensing"]::after {
+        background: linear-gradient(135deg, var(--stage-standard), transparent);
+      }
+      .chip[data-stage="decision"]::after {
+        background: linear-gradient(135deg, var(--stage-enforcement), transparent);
+      }
+      .chip[data-stage="action"]::after {
+        background: linear-gradient(135deg, var(--stage-timing), transparent);
+      }
+      .chip[data-stage="feedback"]::after {
+        background: linear-gradient(135deg, var(--stage-money), transparent);
+      }
+
+      .chip-label {
+        text-transform: uppercase;
+        font-size: 0.79rem;
+        letter-spacing: 0.25em;
+        color: var(--muted);
+      }
+
+      .chip-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+      }
+
+      .chip-subtitle {
+        font-size: 0.95rem;
+        color: var(--muted);
+      }
+
+      .tooltip {
+        position: relative;
+        cursor: help;
+        text-decoration: dotted underline;
+      }
+
+      .tooltip:hover::after,
+      .tooltip:focus::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        left: 0;
+        bottom: 120%;
+        width: max(200px, 80%);
+        background: #0f172a;
+        color: #f8fafc;
+        padding: 0.5rem;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        line-height: 1.3;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.45);
+        z-index: 10;
+      }
+
+      section.stage {
+        margin-bottom: 2.5rem;
+        padding: 1.75rem;
+        border-radius: 24px;
+        border: 1px solid var(--border);
+        background: var(--card-soft);
+      }
+
+      .pipeline-panel {
+        margin-bottom: 2.5rem;
+        padding: 1.75rem;
+        border-radius: 24px;
+        border: 1px solid var(--border);
+        background: rgba(4, 7, 20, 0.6);
+      }
+
+      .pipeline-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+      }
+
+      .pipeline-step {
+        border-radius: 18px;
+        padding: 1.2rem;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        background: rgba(2, 6, 23, 0.7);
+        display: grid;
+        gap: 0.5rem;
+      }
+
+      .pipeline-step.complete {
+        border-color: rgba(96, 165, 250, 0.5);
+      }
+
+      .pipeline-step h3 {
+        margin: 0;
+        font-size: 1.05rem;
+      }
+
+      .pipeline-step-status {
+        font-size: 0.8rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .pipeline-step-status.complete {
+        color: var(--payout);
+      }
+
+      .pipeline-step-status.pending {
+        color: var(--muted-strong);
+      }
+
+      .pipeline-detail {
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+
+      .trigger-section {
+        border: 1px solid var(--border);
+        background: rgba(9, 13, 35, 0.85);
+      }
+
+      .trigger-flow {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .flow-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 1rem;
+        padding: 1rem 0;
+      }
+
+      .flow-card {
+        border-radius: 16px;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        padding: 1rem;
+        background: rgba(4, 7, 20, 0.55);
+        display: grid;
+        gap: 0.45rem;
+      }
+
+      .flow-card.pending {
+        opacity: 0.6;
+      }
+
+      .flow-label {
+        text-transform: uppercase;
+        font-size: 0.72rem;
+        letter-spacing: 0.25em;
+        color: var(--muted-strong);
+      }
+
+      .flow-value {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+      }
+
+      .stage-header {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .stage-eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 0.25em;
+        color: var(--muted);
+        font-size: 0.75rem;
+      }
+
+      .stage-title {
+        margin: 0;
+        font-size: 1.6rem;
+      }
+
+      .stage-description {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .stage-body {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .list-card,
+      .decision-card,
+      .action-card,
+      .feedback-card {
+        border-radius: 18px;
+        border: 1px solid var(--border);
+        padding: 1rem 1.25rem;
+        background: rgba(2, 6, 23, 0.65);
+        display: grid;
+        gap: 0.85rem;
+      }
+
+      .list-card header,
+      .decision-card header,
+      .action-card header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 0.4rem;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.15rem 0.65rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+      }
+
+      .tag.eligibility {
+        background: rgba(96, 165, 250, 0.15);
+        color: var(--eligibility);
+      }
+
+      .tag.payout {
+        background: rgba(52, 211, 153, 0.15);
+        color: var(--payout);
+      }
+
+      .metric-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.75rem;
+      }
+
+      .metric {
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+
+      .metric span {
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      .hash {
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.85rem;
+        word-break: break-all;
+        color: var(--text);
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      button {
+        font-family: inherit;
+        border: none;
+        border-radius: 999px;
+        padding: 0.45rem 0.95rem;
+        font-size: 0.9rem;
+        cursor: pointer;
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid transparent;
+        transition: background 0.2s, border 0.2s;
+      }
+
+      button:hover,
+      button:focus-visible {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: rgba(255, 255, 255, 0.2);
+        outline: none;
+      }
+
+      .copy-btn {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        margin-left: 0.4rem;
+      }
+
+      .progress {
+        height: 6px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        position: relative;
+        margin-top: 0.4rem;
+      }
+
+      .progress span {
+        position: absolute;
+        inset: 0;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--eligibility), var(--payout));
+      }
+
+      .empty {
+        text-align: center;
+        color: var(--muted);
+        padding: 1rem;
+      }
+
+      .feedback-log {
+        display: grid;
+        gap: 0.6rem;
+      }
+
+      .modal-root {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+      }
+
+      .modal-root[aria-hidden="false"] {
+        display: flex;
+      }
+
+      .modal-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(2, 6, 23, 0.8);
+      }
+
+      .modal {
+        position: relative;
+        background: #0f172a;
+        color: var(--text);
+        padding: 1.75rem;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        width: min(520px, 92vw);
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.35);
+      }
+
+      .modal h3 {
+        margin-top: 0;
+      }
+
+      .modal-close {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.75rem;
+        background: none;
+        font-size: 1.5rem;
+        border: none;
+        color: var(--muted);
+      }
+
+      .modal table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+      }
+
+      .modal td {
+        padding: 0.4rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .modal td:first-child {
+        color: var(--muted);
+        width: 36%;
+      }
+
+      @media (max-width: 640px) {
+        body {
+          padding: 1.25rem;
+        }
+        .stage,
+        .class-banner,
+        .chip {
+          padding: 1.1rem;
+        }
+        button {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hero">
+      <span class="eyebrow">CityOS · Phase 2 · Decision Integrity</span>
+      <h1>Policy Metabolism for Taipei AQI Fund</h1>
+      <p class="hero-subtitle">
+        Phase 2 is where the CityOS thesis is tested: can open, verifiable data safely drive faster, more accountable
+        governance? This ledger exposes the four transparencies reviewers need—standards, enforcement, timing, and money—so
+        any jurisdiction can fork the framework, adjust thresholds, and audit the outcomes.
+      </p>
+      <p class="hero-subtitle" id="status">Loading ledger…</p>
+    </header>
+
+    <section class="metabolism-bar">
+      <div class="class-banner" aria-live="polite">
+        <div class="chip-label">Class-3 readiness</div>
+        <div class="class-status" id="class-status">Detecting…</div>
+        <p class="stage-description">
+          Transparency of standards: Class-3 is the highest alert for PM₂.₅ events. When active, funding modules tighten
+          their thresholds automatically. (Reading <code>class3.json</code>.)
+        </p>
+      </div>
+      <div class="chips" id="metabolism-chips" aria-live="polite"></div>
+    </section>
+
+    <section class="pipeline-panel" aria-live="polite">
+      <div class="stage-header">
+        <span class="stage-eyebrow">Under the hood · CLI parity</span>
+        <h2 class="stage-title">Phase-2 policy pipeline</h2>
+        <p class="stage-description">
+          Mirrors the local commands (detect → deploy → evaluate → export). Refresh after running each script to see the
+          checkpoints update.
+        </p>
+      </div>
+      <div class="pipeline-grid" id="pipeline-steps"></div>
+    </section>
+
+    <section class="stage trigger-section" id="stage-triggers">
+      <div class="stage-header">
+        <span class="stage-eyebrow">Trigger walkthroughs · end-to-end view</span>
+        <h2 class="stage-title">Each proof’s journey through the policy graph</h2>
+        <p class="stage-description">
+          Every row below represents a trigger: data ingested, rule evaluated, funding approved, and treasury action. Use it to
+          narrate how modular policies travel from sensing to payouts.
+        </p>
+      </div>
+      <div class="trigger-flow" id="trigger-flows"></div>
+    </section>
+
+    <section class="stage" id="stage-sensing">
+      <div class="stage-header">
+        <span class="stage-eyebrow">Data verified · transparency of standards</span>
+        <h2 class="stage-title">MOENV proofs powering triggers</h2>
+        <p class="stage-description">
+          Unique Phase-1 proofs referenced by this ledger. Each proof links to signed MOENV payloads, showing exactly
+          which environmental signals triggered policy logic.
+        </p>
+      </div>
+      <div class="stage-body" id="sensing-list"></div>
+    </section>
+
+    <section class="stage" id="stage-decision">
+      <div class="stage-header">
+        <span class="stage-eyebrow">Approvals issued · transparency of enforcement</span>
+        <h2 class="stage-title">Funding approvals produced by modules</h2>
+        <p class="stage-description">
+          Rule evaluations performed by program modules. Thresholds stay configurable for each jurisdiction while the
+          trigger logic remains portable.
+        </p>
+      </div>
+      <div class="stage-body" id="decision-list"></div>
+    </section>
+
+    <section class="stage" id="stage-action">
+      <div class="stage-header">
+        <span class="stage-eyebrow">Funds released · transparency of timing</span>
+        <h2 class="stage-title">On-chain disbursements</h2>
+        <p class="stage-description">
+          On-chain payouts with timestamps and program caps, so stakeholders can see when remediation budgets actually
+          move.
+        </p>
+      </div>
+      <div class="stage-body" id="action-list"></div>
+    </section>
+
+    <section class="stage" id="stage-feedback">
+      <div class="stage-header">
+        <span class="stage-eyebrow">Audits logged · transparency of money</span>
+        <h2 class="stage-title">Public verification log</h2>
+        <p class="stage-description">
+          A lightweight record of which inputs or outputs have been inspected locally. Later phases can sync this with
+          reviewers or auditors.
+        </p>
+      </div>
+      <div class="stage-body">
+        <div class="feedback-log" id="feedback-log"></div>
+        <button id="clear-feedback" type="button">Clear feedback log</button>
+      </div>
+    </section>
+
+    <div class="modal-root" id="modal-root" aria-hidden="true">
+      <div class="modal-backdrop" data-close-modal></div>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <button class="modal-close" type="button" data-close-modal aria-label="Close dialog">×</button>
+        <h3 id="modal-title"></h3>
+        <div id="modal-content"></div>
+      </div>
+    </div>
+
+    <script>
+      const FEEDBACK_STORAGE_KEY = "policyLedgerFeedbackLog";
+
+      const TOOLTIP_COPY = {
+        sensing: "Verified MOENV dataset proofs (Phase‑1) referenced here.",
+        decision: "Rules evaluated; approvals issued.",
+        action: "Funds released (transactions) after approvals.",
+        feedback: "Public audit interactions tracked locally."
+      };
+
+      const CHIP_DEFS = [
+        { id: "sensing", label: "Data Verified", subtitle: "Phase-1 proofs referenced" },
+        { id: "decision", label: "Approvals Issued", subtitle: "Funding approvals" },
+        { id: "action", label: "Funds Released", subtitle: "Payout events" },
+        { id: "feedback", label: "Audits Logged", subtitle: "Verifications logged" }
+      ];
+
+      const PROGRAM_LABELS = {
+        101: "IoT Coverage Boost",
+        102: "EV Retrofit Incentive",
+        103: "Fixed-Site CEMS Upgrade",
+        104: "Construction Dust Control"
+      };
+
+      const PROGRAM_RULES = {
+        101: "Coverage ≥ 90% for 24h (IoT sensor mesh).",
+        102: "≥ 500 EV retrofits or inspections processed.",
+        103: "CEMS uptime ≥ 95% over quarter.",
+        104: "PM₂.₅ readings ≤ 40 µg/m³ on construction sites."
+      };
+
+      const PIPELINE_STEPS = [
+        {
+          id: "phase1-detect",
+          label: "Link Phase-1 proofs",
+          subtitle: "scripts/programs/phase1-detect.ts",
+          description: "Reads detected addresses from config/programs/phase1.addresses.json.",
+          detail: (data = {}) =>
+            data?.openDataRegistry
+              ? `OpenDataRegistry ${truncateHash(data.openDataRegistry)}`
+              : "Run phase1-detect to link proofs."
+        },
+        {
+          id: "programs-deploy",
+          label: "Deploy fund registry",
+          subtitle: "scripts/programs/deploy-phase2.ts",
+          description: "Deploys FundRegistry + four modules with Taipei caps.",
+          detail: (data = {}) => (data?.registry ? `Registry ${truncateHash(data.registry)}` : "Awaiting deploy script.")
+        },
+        {
+          id: "programs-evaluate",
+          label: "Evaluate modules",
+          subtitle: "scripts/programs/metrics/evaluate-all.ts",
+          description: "Runs module.evaluate(...) for each proof and logs successes.",
+          detail: (data = {}) =>
+            data?.successes
+              ? `${data.successes}/${data.attempted ?? data.successes} approvals`
+              : "Awaiting evaluate script."
+        },
+        {
+          id: "programs-export",
+          label: "Export ledger",
+          subtitle: "scripts/programs/export-ledger.ts",
+          description: "Collects Eligibility/Funds Released events and writes ledger.json.",
+          detail: (data = {}) =>
+            data?.elig
+              ? `${data.elig} approvals · ${data.payout ?? 0} payouts`
+              : "Run export to update ledger.json."
+        }
+      ];
+
+      const currency = new Intl.NumberFormat("en-TW", {
+        style: "currency",
+        currency: "TWD",
+        maximumFractionDigits: 0
+      });
+
+      function truncateHash(val) {
+        if (!val || typeof val !== "string") return "—";
+        if (val.length <= 14) return val;
+        return `${val.slice(0, 10)}…${val.slice(-6)}`;
+      }
+
+      function copyToClipboard(value) {
+        if (!navigator.clipboard || !value) return;
+        navigator.clipboard.writeText(value).catch(() => {
+          /* swallow */
+        });
+      }
+
+      function normalizeLedger(raw) {
+        const safeEntries = Array.isArray(raw?.entries) ? raw.entries : [];
+        return {
+          generatedAt: raw?.generatedAt ?? null,
+          programs: typeof raw?.programs === "object" && raw?.programs ? raw.programs : {},
+          caps: raw?.programCaps || raw?.caps || {},
+          entries: safeEntries
+            .map((entry, index) => ({
+              index,
+              event: entry?.event ?? entry?.type ?? "Unknown",
+              programId: Number(entry?.programId ?? entry?.program ?? 0) || 0,
+              proofId: entry?.proofId ?? entry?.proof ?? null,
+              amountNTD: Number(entry?.amountNTD ?? entry?.amount ?? 0) || 0,
+              ts: entry?.ts ?? entry?.timestamp ?? null,
+              txHash: entry?.txHash ?? entry?.transactionHash ?? null,
+              toWallet: entry?.toWallet ?? entry?.recipient ?? null,
+              stationId: entry?.stationId ?? entry?.station ?? null,
+              uri: entry?.uri ?? entry?.datasetUri ?? null,
+              rule: entry?.rule ?? null
+            }))
+            .filter((entry) => entry.programId !== 0 || entry.proofId)
+        };
+      }
+
+      function uniqueProofs(entries) {
+        const map = new Map();
+        entries.forEach((entry) => {
+          if (!entry.proofId) return;
+          if (!map.has(entry.proofId)) {
+            map.set(entry.proofId, entry);
+          }
+        });
+        return Array.from(map.values());
+      }
+
+      function getFeedbackLog() {
+        try {
+          const raw = localStorage.getItem(FEEDBACK_STORAGE_KEY);
+          return raw ? JSON.parse(raw) : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveFeedbackLog(log) {
+        localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(log));
+      }
+
+      function appendFeedbackLog(entry) {
+        const log = getFeedbackLog();
+        log.unshift(entry);
+        saveFeedbackLog(log.slice(0, 50));
+        return getFeedbackLog();
+      }
+
+      function renderClassBanner(status) {
+        const element = document.getElementById("class-status");
+        if (status?.pm25) {
+          element.textContent = "Class-3 active for PM₂.₅";
+          element.style.color = "var(--danger)";
+        } else {
+          element.textContent = "Class-3 not active";
+          element.style.color = "var(--success)";
+        }
+      }
+
+      function renderChips(stats, feedbackCount) {
+        const chips = document.getElementById("metabolism-chips");
+        chips.innerHTML = "";
+        CHIP_DEFS.forEach((chip) => {
+          const value =
+            chip.id === "sensing"
+              ? stats.sensing
+              : chip.id === "decision"
+              ? stats.decision
+              : chip.id === "action"
+              ? stats.action
+              : feedbackCount;
+          const node = document.createElement("div");
+          node.className = "chip";
+          node.dataset.stage = chip.id;
+          node.innerHTML = `
+            <span class="chip-label tooltip" tabindex="0" data-tooltip="${TOOLTIP_COPY[chip.id]}">${chip.label}</span>
+            <div class="chip-value">${value}</div>
+            <div class="chip-subtitle">${chip.subtitle}</div>
+          `;
+          chips.appendChild(node);
+        });
+      }
+
+      function findLatest(entries, stepId) {
+        for (let i = entries.length - 1; i >= 0; i -= 1) {
+          if (entries[i].step === stepId) return entries[i];
+        }
+        return null;
+      }
+
+      async function loadPipelineLog() {
+        try {
+          const response = await fetch(`./ledger.log?_=${Date.now()}`);
+          if (!response.ok) return [];
+          const text = await response.text();
+          return text
+            .trim()
+            .split(/\n+/)
+            .map(parseLogLine)
+            .filter((entry) => entry && entry.step);
+        } catch {
+          return [];
+        }
+      }
+
+      function parseLogLine(line) {
+        if (!line.trim()) return null;
+        const match = line.match(/^\[(.+?)\]\s+(.*)$/);
+        if (!match) return null;
+        const [, timestamp, rest] = match;
+        const data = {};
+        rest
+          .trim()
+          .split(/\s+/)
+          .forEach((token) => {
+            const eq = token.indexOf("=");
+            if (eq === -1) return;
+            const key = token.slice(0, eq);
+            const value = token.slice(eq + 1);
+            data[key] = value?.replace(/^"|"$/g, "");
+          });
+        if (!data.step) return null;
+        return { timestamp, step: data.step, data };
+      }
+
+      function renderPipelineTimeline(logEntries, ledger) {
+        const container = document.getElementById("pipeline-steps");
+        container.innerHTML = "";
+        PIPELINE_STEPS.forEach((step) => {
+          const entry = findLatest(logEntries, step.id);
+          const status = entry ? "complete" : "pending";
+          const timestamp = entry?.timestamp || (step.id === "programs-export" ? ledger.generatedAt : null);
+          const detailText = entry ? step.detail(entry.data) : step.detail();
+          const card = document.createElement("article");
+          card.className = `pipeline-step ${status}`;
+          card.innerHTML = `
+            <span class="pipeline-step-status ${status}">${status === "complete" ? "Complete" : "Pending"}</span>
+            <h3>${step.label}</h3>
+            <p class="pipeline-detail">${detailText || "Awaiting latest run."}</p>
+            <p class="stage-description">${step.subtitle}${
+              timestamp ? ` · ${new Date(timestamp).toLocaleString()}` : ""
+            }</p>
+          `;
+          container.appendChild(card);
+        });
+      }
+
+      function renderSensingSection(entries) {
+        const list = document.getElementById("sensing-list");
+        list.innerHTML = "";
+        const proofs = uniqueProofs(entries);
+        if (!proofs.length) {
+          list.innerHTML = '<p class="empty">No Phase‑1 proofs referenced yet.</p>';
+          return;
+        }
+        proofs.forEach((proof) => {
+          const card = document.createElement("article");
+          card.className = "list-card";
+          card.innerHTML = `
+            <header>
+              <strong>Proof ${truncateHash(proof.proofId)}</strong>
+              <span class="metric">Station <span>${proof.stationId ?? "n/a"}</span></span>
+            </header>
+            <div class="metric-row">
+              <div class="metric">Timestamp <span>${proof.ts ? new Date(proof.ts).toLocaleString() : "—"}</span></div>
+              <div class="metric">Program <span>${proof.programId || "—"}</span></div>
+            </div>
+            <div class="metric">
+              URI <span class="hash">${proof.uri ?? "—"}</span>
+            </div>
+            <div class="actions">
+              <button type="button" data-action="verify-data" data-proof="${proof.proofId ?? ""}">Verify data</button>
+              <button class="copy-btn" type="button" data-copy="${proof.proofId ?? ""}">Copy proof</button>
+            </div>
+          `;
+          list.appendChild(card);
+        });
+      }
+
+      function renderDecisionSection(entries, programs) {
+        const list = document.getElementById("decision-list");
+        list.innerHTML = "";
+        const decisions = entries.filter((entry) => entry.event === "EligibilityIssued");
+        if (!decisions.length) {
+          list.innerHTML = '<p class="empty">Awaiting eligibility events.</p>';
+          return;
+        }
+        decisions
+          .slice()
+          .sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime())
+          .forEach((entry) => {
+            const card = document.createElement("article");
+            card.className = "decision-card";
+            const programName = programs?.[entry.programId] ?? PROGRAM_LABELS[entry.programId] ?? `Program ${entry.programId}`;
+            const rule = entry.rule || "Rule applied: If PM₂.₅ ≥ 35 µg/m³ for 6h → Funding approved";
+            card.innerHTML = `
+              <header>
+                <div>
+                  <strong>${programName}</strong>
+                  <p class="stage-description">${rule}</p>
+                </div>
+                <div class="tag eligibility">Funding Approved</div>
+              </header>
+              <div class="metric-row">
+                <div class="metric">Amount <span>${currency.format(entry.amountNTD || 0)}</span></div>
+                <div class="metric">Timestamp <span>${entry.ts ? new Date(entry.ts).toLocaleString() : "—"}</span></div>
+                <div class="metric">Proof <span class="hash">${truncateHash(entry.proofId)}</span></div>
+              </div>
+              <div class="actions">
+                <button type="button" data-action="verify-data" data-proof="${entry.proofId ?? ""}">Verify data</button>
+                <button class="copy-btn" type="button" data-copy="${entry.proofId ?? ""}">Copy proof</button>
+              </div>
+            `;
+            list.appendChild(card);
+          });
+      }
+
+      function renderActionSection(entries, programs, caps) {
+        const list = document.getElementById("action-list");
+        list.innerHTML = "";
+        const payouts = entries.filter((entry) => entry.event === "PayoutExecuted");
+        if (!payouts.length) {
+          list.innerHTML = '<p class="empty">No payouts recorded yet.</p>';
+          return;
+        }
+        const spentByProgram = {};
+        payouts.forEach((entry) => {
+          spentByProgram[entry.programId] = (spentByProgram[entry.programId] || 0) + entry.amountNTD;
+        });
+
+        payouts
+          .slice()
+          .sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime())
+          .forEach((entry) => {
+            const cap = Number(caps?.[entry.programId]) || null;
+            const spent = spentByProgram[entry.programId];
+            const percent = cap ? Math.min((spent / cap) * 100, 100) : null;
+            const card = document.createElement("article");
+            card.className = "action-card";
+            const programName = programs?.[entry.programId] ?? PROGRAM_LABELS[entry.programId] ?? `Program ${entry.programId}`;
+            card.innerHTML = `
+              <header>
+                <div>
+                  <strong>${programName}</strong>
+                  <p class="stage-description">Funds released to ${truncateHash(entry.toWallet)}</p>
+                </div>
+                <div class="tag payout">Funds Released</div>
+              </header>
+              <div class="metric-row">
+                <div class="metric">Amount <span>${currency.format(entry.amountNTD || 0)}</span></div>
+                <div class="metric">Timestamp <span>${entry.ts ? new Date(entry.ts).toLocaleString() : "—"}</span></div>
+                <div class="metric">Tx Hash <span class="hash">${truncateHash(entry.txHash)}</span></div>
+              </div>
+              ${
+                cap
+                  ? `<div class="metric">Spent vs Cap <span>${currency.format(spent)} / ${currency.format(cap)}</span>
+                      <div class="progress" aria-label="Percent of program cap spent"><span style="width:${percent.toFixed(
+                        1
+                      )}%"></span></div></div>`
+                  : ""
+              }
+              <div class="actions">
+                <button type="button" data-action="verify-tx" data-tx="${entry.txHash ?? ""}">Verify tx</button>
+                <button class="copy-btn" type="button" data-copy="${entry.txHash ?? ""}">Copy tx</button>
+              </div>
+            `;
+            list.appendChild(card);
+          });
+      }
+
+      function buildTriggerFlows(entries) {
+        const flows = new Map();
+        entries.forEach((entry) => {
+          const key = entry.proofId || `${entry.programId}-${entry.txHash}`;
+          if (!flows.has(key)) {
+            flows.set(key, {
+              programId: entry.programId,
+              proofId: entry.proofId || key,
+              eligibility: null,
+              payout: null
+            });
+          }
+          const flow = flows.get(key);
+          if (entry.event === "EligibilityIssued" && !flow.eligibility) {
+            flow.eligibility = entry;
+          }
+          if (entry.event === "PayoutExecuted" && !flow.payout) {
+            flow.payout = entry;
+          }
+        });
+        return Array.from(flows.values()).sort((a, b) => {
+          const tsA = a.eligibility?.ts || a.payout?.ts || "";
+          const tsB = b.eligibility?.ts || b.payout?.ts || "";
+          return new Date(tsB).getTime() - new Date(tsA).getTime();
+        });
+      }
+
+      function renderTriggerFlows(entries, programs) {
+        const container = document.getElementById("trigger-flows");
+        container.innerHTML = "";
+        const flows = buildTriggerFlows(entries);
+        if (!flows.length) {
+          container.innerHTML = '<p class="empty">Run the Phase-2 scripts to populate proof flows.</p>';
+          return;
+        }
+        flows.forEach((flow) => {
+          const programName = programs?.[flow.programId] ?? PROGRAM_LABELS[flow.programId] ?? `Program ${flow.programId}`;
+          const ruleText = PROGRAM_RULES[flow.programId] ?? "Configurable threshold (set per jurisdiction).";
+          const eligibilityTs = flow.eligibility?.ts ? new Date(flow.eligibility.ts).toLocaleString() : "Pending";
+          const payoutTs = flow.payout?.ts ? new Date(flow.payout.ts).toLocaleString() : "Pending";
+          const row = document.createElement("div");
+          row.className = "flow-row";
+          row.innerHTML = `
+            <div class="flow-card">
+              <div class="flow-label">Data ingestion</div>
+              <p class="flow-value">${truncateHash(flow.proofId)}</p>
+              <p class="stage-description">${programName}</p>
+              <div class="actions">
+                <button type="button" data-action="verify-data" data-proof="${flow.proofId ?? ""}">Verify data</button>
+              </div>
+            </div>
+            <div class="flow-card">
+              <div class="flow-label">Policy condition</div>
+              <p class="flow-value">${ruleText}</p>
+              <p class="stage-description">Module evaluates incoming metrics against this trigger.</p>
+            </div>
+            <div class="flow-card ${flow.eligibility ? "" : "pending"}">
+              <div class="flow-label">Funding approval</div>
+              <p class="flow-value">
+                ${flow.eligibility ? currency.format(flow.eligibility.amountNTD || 0) : "Awaiting"}
+              </p>
+              <p class="stage-description">${eligibilityTs}</p>
+            </div>
+            <div class="flow-card ${flow.payout ? "" : "pending"}">
+              <div class="flow-label">Treasury action</div>
+              <p class="flow-value">
+                ${flow.payout ? currency.format(flow.payout.amountNTD || 0) : "Pending payout"}
+              </p>
+              <p class="stage-description">${payoutTs}</p>
+              <div class="actions">
+                ${
+                  flow.payout
+                    ? `<button type="button" data-action="verify-tx" data-tx="${flow.payout.txHash ?? ""}">Verify tx</button>`
+                    : ""
+                }
+              </div>
+            </div>
+          `;
+          container.appendChild(row);
+        });
+      }
+
+      function renderFeedback(log) {
+        const container = document.getElementById("feedback-log");
+        container.innerHTML = "";
+        if (!log.length) {
+          container.innerHTML = '<p class="empty">No local verification actions yet.</p>';
+          return;
+        }
+        log.forEach((entry) => {
+          const card = document.createElement("article");
+          card.className = "feedback-card";
+          card.innerHTML = `
+            <div><strong>${entry.label}</strong> · <span class="tag ${entry.type === "tx" ? "payout" : "eligibility"}">${
+            entry.type === "tx" ? "Tx" : "Data"
+          }</span></div>
+            <p class="stage-description">${new Date(entry.timestamp).toLocaleString()}</p>
+          `;
+          container.appendChild(card);
+        });
+      }
+
+      function openModal(title, rows) {
+        const root = document.getElementById("modal-root");
+        root.setAttribute("aria-hidden", "false");
+        document.getElementById("modal-title").textContent = title;
+        const content = document.getElementById("modal-content");
+        if (!rows || !rows.length) {
+          content.innerHTML = "<p>No additional metadata available yet.</p>";
+          return;
+        }
+        const table = document.createElement("table");
+        rows.forEach(([label, value]) => {
+          const tr = document.createElement("tr");
+          const tdLabel = document.createElement("td");
+          tdLabel.textContent = label;
+          const tdValue = document.createElement("td");
+          tdValue.textContent = value;
+          tr.appendChild(tdLabel);
+          tr.appendChild(tdValue);
+          table.appendChild(tr);
+        });
+        content.innerHTML = "";
+        content.appendChild(table);
+      }
+
+      function closeModal() {
+        document.getElementById("modal-root").setAttribute("aria-hidden", "true");
+      }
+
+      async function loadClass3() {
+        try {
+          const response = await fetch("./class3.json");
+          if (!response.ok) return null;
+          return response.json();
+        } catch {
+          return null;
+        }
+      }
+
+      async function init() {
+        const modalRoot = document.getElementById("modal-root");
+        modalRoot.addEventListener("click", (event) => {
+          if (event.target.matches("[data-close-modal]")) {
+            closeModal();
+          }
+        });
+
+        document.getElementById("clear-feedback").addEventListener("click", () => {
+          localStorage.removeItem(FEEDBACK_STORAGE_KEY);
+          renderFeedback([]);
+          renderChips(currentStats, 0);
+        });
+
+        const class3 = await loadClass3();
+        renderClassBanner(class3 ?? { pm25: false });
+
+        try {
+          const response = await fetch("./ledger.json");
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const ledger = normalizeLedger(await response.json());
+          const entries = ledger.entries;
+          document.getElementById("status").textContent = `Updated ${
+            ledger.generatedAt ? new Date(ledger.generatedAt).toLocaleString() : "—"
+          } · ${entries.length} events`;
+
+          const stats = {
+            sensing: uniqueProofs(entries).length,
+            decision: entries.filter((entry) => entry.event === "EligibilityIssued").length,
+            action: entries.filter((entry) => entry.event === "PayoutExecuted").length
+          };
+          currentStats = stats;
+          const feedbackLog = getFeedbackLog();
+          renderChips(stats, feedbackLog.length);
+          renderSensingSection(entries);
+          renderDecisionSection(entries, ledger.programs ?? {});
+          renderActionSection(entries, ledger.programs ?? {}, ledger.caps ?? {});
+          renderTriggerFlows(entries, ledger.programs ?? {});
+          const pipelineLog = await loadPipelineLog();
+          renderPipelineTimeline(pipelineLog, ledger);
+          renderFeedback(feedbackLog);
+
+          document.body.addEventListener("click", (event) => {
+            const copyTarget = event.target.closest("[data-copy]");
+            if (copyTarget) {
+              copyToClipboard(copyTarget.getAttribute("data-copy"));
+              copyTarget.textContent = "Copied!";
+              setTimeout(() => (copyTarget.textContent = "Copy"), 1000);
+              return;
+            }
+
+            const actionButton = event.target.closest("[data-action]");
+            if (!actionButton) return;
+            const action = actionButton.getAttribute("data-action");
+            if (action === "verify-data") {
+              const proofId = actionButton.getAttribute("data-proof");
+              const related = entries.find((entry) => entry.proofId === proofId);
+              openModal("Verify Phase-1 Proof", [
+                ["Proof ID", proofId || "—"],
+                ["Program ID", related?.programId ?? "—"],
+                ["Station", related?.stationId ?? "Unknown"],
+                ["Timestamp", related?.ts ? new Date(related.ts).toLocaleString() : "—"],
+                ["Dataset URI", related?.uri ?? "Not provided"],
+                ["Explorer", "To be linked"]
+              ]);
+              const log = appendFeedbackLog({
+                type: "data",
+                label: `Proof ${truncateHash(proofId ?? "")}`,
+                timestamp: Date.now()
+              });
+              renderFeedback(log);
+              renderChips(currentStats, log.length);
+            } else if (action === "verify-tx") {
+              const txHash = actionButton.getAttribute("data-tx");
+              openModal("Verify Transaction", [
+                ["Tx Hash", txHash || "—"],
+                ["Explorer", txHash ? `chain://tx/${txHash}` : "To be linked"],
+                ["Recipient", truncateHash(entries.find((entry) => entry.txHash === txHash)?.toWallet ?? "")],
+                ["Amount", currency.format(entries.find((entry) => entry.txHash === txHash)?.amountNTD || 0)]
+              ]);
+              const log = appendFeedbackLog({
+                type: "tx",
+                label: `Tx ${truncateHash(txHash ?? "")}`,
+                timestamp: Date.now()
+              });
+              renderFeedback(log);
+              renderChips(currentStats, log.length);
+            }
+          });
+        } catch (error) {
+          document.getElementById("status").textContent = `Failed to load ledger: ${error}`;
+          document.getElementById("sensing-list").innerHTML =
+            document.getElementById("decision-list").innerHTML =
+              document.getElementById("action-list").innerHTML =
+                '<p class="empty">Unable to read ledger. Run export first.</p>';
+          const triggerContainer = document.getElementById("trigger-flows");
+          if (triggerContainer) triggerContainer.innerHTML = '<p class="empty">No trigger flows to display.</p>';
+          const pipelineFallback = document.getElementById("pipeline-steps");
+          if (pipelineFallback) {
+            pipelineFallback.innerHTML = '<p class="pipeline-detail">Run detect/deploy/evaluate/export to populate the timeline.</p>';
+          }
+        }
+      }
+
+      let currentStats = { sensing: 0, decision: 0, action: 0 };
+      init();
+    </script>
+  </body>
+</html>

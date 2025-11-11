@@ -5,7 +5,14 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev:all": "bash scripts/dev-all.sh"
+    "dev:all": "bash scripts/dev-all.sh",
+    "ingest:once": "ts-node --project services/ingest-moev/tsconfig.json services/ingest-moev/src/index.ts",
+    "programs:compile": "hardhat compile",
+    "programs:deploy:adapter": "hardhat run scripts/programs/deploy-adapter.ts --network localhost",
+    "programs:deploy": "hardhat run scripts/programs/deploy-phase2.ts --network localhost",
+    "programs:evaluate": "hardhat run scripts/programs/metrics/evaluate-all.ts --network localhost",
+    "programs:export": "hardhat run scripts/programs/export-ledger.ts --network localhost",
+    "programs:serve": "ts-node --project tsconfig.json scripts/programs/serve-ledger.ts"
   },
   "repository": {
     "type": "git",

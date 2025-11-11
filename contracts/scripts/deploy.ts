@@ -1,4 +1,6 @@
 /* eslint-disable no-console */
+import { promises as fs } from "node:fs";
+import path from "node:path";
 import { ethers } from "hardhat";
 
 async function main() {
@@ -64,9 +66,95 @@ async function main() {
   console.log("- DEP Taipei City (Reviewer/Auditor):", reviewer1.address);
   console.log("- Green Citizen Alliance (Reviewer):", reviewer2.address);
   console.log("- Citizen (Reviewer):", reviewer3.address);
+
+  await syncEnvFiles({
+    publisherRegistry: publisherRegistry.target as string,
+    openDataRegistry: openDataRegistry.target as string,
+    attestationRegistry: attestationRegistry.target as string,
+    policyDataView: policyDataView.target as string
+  });
 }
 
 main().catch((e) => {
   console.error(e);
   process.exit(1);
 });
+
+async function syncEnvFiles(addresses: {
+  publisherRegistry: string;
+  openDataRegistry: string;
+  attestationRegistry: string;
+  policyDataView: string;
+}) {
+  const rootDir = path.resolve(__dirname, "..", "..");
+
+  const updates: Array<{ file: string; values: Record<string, string> }> = [
+    {
+      file: "services/ingest-moev/.env",
+      values: {
+        OPEN_DATA_REGISTRY_ADDRESS: addresses.openDataRegistry
+      }
+    },
+    {
+      file: "services/verify-api/.env",
+      values: {
+        OPEN_DATA_REGISTRY_ADDRESS: addresses.openDataRegistry
+      }
+    },
+    {
+      file: "services/atproto-mirror/.env",
+      values: {
+        OPEN_DATA_REGISTRY_ADDRESS: addresses.openDataRegistry,
+        ATTESTATION_REGISTRY_ADDRESS: addresses.attestationRegistry
+      }
+    },
+    {
+      file: "frontend/.env.local",
+      values: {
+        NEXT_PUBLIC_PUBLISHER_REGISTRY: addresses.publisherRegistry,
+        NEXT_PUBLIC_OPEN_DATA_REGISTRY: addresses.openDataRegistry,
+        NEXT_PUBLIC_ATTESTATION_REGISTRY: addresses.attestationRegistry,
+        NEXT_PUBLIC_POLICY_DATA_VIEW: addresses.policyDataView
+      }
+    }
+  ];
+
+  await Promise.all(
+    updates.map(async ({ file, values }) => {
+      const filePath = path.join(rootDir, file);
+      await updateEnvFile(filePath, values);
+      console.log(`[deploy] updated ${file}`);
+    })
+  );
+}
+
+async function updateEnvFile(filePath: string, updates: Record<string, string>) {
+  let content = "";
+  try {
+    content = await fs.readFile(filePath, "utf8");
+  } catch (err) {
+    console.warn(`[deploy] skipped ${filePath}: ${err}`);
+    return;
+  }
+
+  const lines = content.split(/\r?\n/);
+  const seen = new Set<string>();
+  const updatedLines = lines.map((line) => {
+    const match = line.match(/^([A-Za-z0-9_]+)=/);
+    if (!match) return line;
+    const key = match[1];
+    if (key in updates) {
+      seen.add(key);
+      return `${key}=${updates[key]}`;
+    }
+    return line;
+  });
+
+  for (const [key, value] of Object.entries(updates)) {
+    if (!seen.has(key)) {
+      updatedLines.push(`${key}=${value}`);
+    }
+  }
+
+  await fs.writeFile(filePath, updatedLines.join("\n"), "utf8");
+}

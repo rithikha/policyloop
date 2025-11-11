@@ -1,0 +1,11 @@
+{
+  "proofId": "0xabc123abc123abc123abc123abc123abc123abc123abc123abc123abc123abcd",
+  "cityId": "taipei",
+  "metrics": {
+    "coverage_ratio_24h": 0.92,
+    "noise_events_processed_24h": 530,
+    "cems_valid_hours_ratio_qtr": 0.96,
+    "pm25_avg_6h": 36.2
+  },
+  "timestamp": "2025-11-10T09:00:00+08:00"
+}

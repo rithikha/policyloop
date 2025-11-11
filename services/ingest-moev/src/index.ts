@@ -7,7 +7,7 @@ import addFormats from "ajv-formats";
 import { getConfig } from "./config";
 import type { IngestConfig } from "./config";
 import { computeDatasetDigest, computeMetadataHash } from "./crypto";
-import { openDataRegistryAbi } from "./registry";
+import { openDataRegistryAbi, publisherRegistryAbi } from "./registry";
 import { pinToIpfs } from "./ipfs";
 
 type StepName = "fetchDataset" | "validateMetadata" | "pinDataset" | "publishProof";
@@ -71,11 +71,33 @@ async function recordStep(
   await savePipelineStatus(status);
 }
 
+async function ensureContractsReady(provider: JsonRpcProvider, registry: Contract, publisher: string) {
+  const registryAddress = registry.target as string;
+  const registryCode = await provider.getCode(registryAddress);
+  if (!registryCode || registryCode === "0x") {
+    throw new Error(
+      `OpenDataRegistry not found at ${registryAddress}. Run ` +
+        "`npx hardhat run contracts/scripts/deploy.ts --network localhost` to seed Phase-1 contracts."
+    );
+  }
+
+  const publisherRegistryAddress: string = await registry.publisherRegistry();
+  const publisherRegistry = new Contract(publisherRegistryAddress, publisherRegistryAbi, provider);
+  const ROLE_PUBLISHER = 1;
+  const hasRole = await publisherRegistry.hasRole(publisher, ROLE_PUBLISHER);
+  if (!hasRole) {
+    throw new Error(
+      `Publisher ${publisher} is not allowlisted. Re-run the deploy script to seed default members or add it manually.`
+    );
+  }
+}
+
 async function main() {
   const config = getConfig();
   const provider = new JsonRpcProvider(config.RPC_URL, config.CHAIN_ID);
   const signer = new Wallet(config.PUBLISHER_KEY, provider);
   const registry = new Contract(config.OPEN_DATA_REGISTRY_ADDRESS, openDataRegistryAbi, signer);
+  await ensureContractsReady(provider, registry, signer.address);
 
   const pipelineStatus: PipelineStatus = {
     datasetUrl: config.DATASET_URL,

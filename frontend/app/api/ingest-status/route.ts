@@ -10,6 +10,15 @@ export async function GET() {
     const data = JSON.parse(raw);
     return NextResponse.json(data);
   } catch (err) {
+    const code = (err as NodeJS.ErrnoException | undefined)?.code;
+    if (code === "ENOENT") {
+      return NextResponse.json(
+        {
+          steps: []
+        },
+        { status: 200 }
+      );
+    }
     return NextResponse.json(
       {
         error: "Ingest status unavailable",

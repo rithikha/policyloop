@@ -1,0 +1,1 @@
+Paste the full Phase‑2 spec here (we generated it earlier).

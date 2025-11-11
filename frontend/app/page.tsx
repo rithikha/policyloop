@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { PublishForm } from "../components/PublishForm";
 import { ProofExplorer } from "../components/ProofExplorer";
 import { AttestationPanel } from "../components/AttestationPanel";
@@ -7,6 +6,9 @@ import { FeedWidget } from "../components/FeedWidget";
 import { AppShell } from "../components/AppShell";
 import { EnvironmentGuard } from "../components/EnvironmentGuard";
 import { IngestStatusCard } from "../components/IngestStatusCard";
+import { ProgramAutomationCard } from "../components/ProgramAutomationCard";
+import { PolicyLedgerCard } from "../components/PolicyLedgerCard";
+import Link from "next/link";
 
 export default function HomePage() {
   return (
@@ -15,10 +17,12 @@ export default function HomePage() {
         <div className="page-grid">
           <IngestStatusCard />
           <PublishForm />
+          <ProgramAutomationCard />
           <ProofExplorer />
           <AttestationPanel />
           <VerifyTool />
           <FeedWidget />
+          <PolicyLedgerCard />
           <section className="card">
             <header className="card-header">
               <h2>Documentation & Next Steps</h2>

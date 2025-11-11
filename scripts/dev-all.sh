@@ -50,6 +50,12 @@ socket.on('connect', () => { socket.end(); process.exit(0); });
 start_service "." "Hardhat node" npx hardhat node
 wait_for_port "127.0.0.1" 8545
 
+log "Deploying Phase-1 contracts…"
+(
+  cd "${ROOT_DIR}"
+  npx hardhat run contracts/scripts/deploy.ts --network localhost
+)
+
 start_service "services/ingest-moev" "ingest-moev" npm run dev
 start_service "services/verify-api" "verify-api" npm run dev
 start_service "services/atproto-mirror" "atproto-mirror" npm run dev
