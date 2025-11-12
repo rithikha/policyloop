@@ -1,0 +1,58 @@
+{
+  "datasetId": "taipei_aqi_demo",
+  "updatedAt": "2025-11-10T09:00:00+08:00",
+  "proofs": [
+    {
+      "proofId": "0x9d4f943cb5aeda6e5532bb91c829e2c6631a5069513b54f2b51cb3da7ba0d0bd",
+      "programId": 101,
+      "stationId": "taipei-iot-01",
+      "recipientIndex": 1,
+      "amountNTD": 64230,
+      "metrics": {
+        "coveragePermille": 972,
+        "eventsProcessed": 302400,
+        "cemsValidPermille": 0,
+        "pm25x10": 0
+      }
+    },
+    {
+      "proofId": "0x75e0175db188795c121886b1386988f96a5bd1e1ad03e692951343b28b031bf4",
+      "programId": 102,
+      "stationId": "taipei-city-hq",
+      "recipientIndex": 2,
+      "amountNTD": 250000,
+      "metrics": {
+        "coveragePermille": 0,
+        "eventsProcessed": 640,
+        "cemsValidPermille": 0,
+        "pm25x10": 0
+      }
+    },
+    {
+      "proofId": "0x34aab68cf3cfa54e3a075edaaf709f667635ff1ad6bf484145032e048fae7777",
+      "programId": 103,
+      "stationId": "taipei-industry-02",
+      "recipientIndex": 3,
+      "amountNTD": 180000,
+      "metrics": {
+        "coveragePermille": 0,
+        "eventsProcessed": 0,
+        "cemsValidPermille": 980,
+        "pm25x10": 0
+      }
+    },
+    {
+      "proofId": "0x68ddf6a90846806ff6b40823f929383cb2ecfe1bf313bcff5ac64b5dd5b4ef0a",
+      "programId": 104,
+      "stationId": "taipei-construction-07",
+      "recipientIndex": 4,
+      "amountNTD": 320000,
+      "metrics": {
+        "coveragePermille": 0,
+        "eventsProcessed": 0,
+        "cemsValidPermille": 0,
+        "pm25x10": 320
+      }
+    }
+  ]
+}

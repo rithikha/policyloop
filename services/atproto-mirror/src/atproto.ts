@@ -2,11 +2,13 @@ import { BskyAgent } from "@atproto/api";
 import type { MirrorConfig } from "./config";
 
 export interface MirrorPayload {
-  kind: "publish" | "attest" | "revoke";
+  kind: "publish" | "attest" | "revoke" | "payout";
   proofId: string;
   stationId?: string;
   note?: string;
   actor?: string;
+  programId?: number;
+  amount?: string;
   timestamp: number;
 }
 
@@ -42,6 +44,10 @@ export class AtprotoPoster {
         return `[${ns}] Attestation posted for proof ${payload.proofId} by ${payload.actor ?? "reviewer"} · note: ${payload.note ?? "n/a"}`;
       case "revoke":
         return `[${ns}] Revocation for proof ${payload.proofId} by ${payload.actor ?? "auditor"} · reason: ${payload.note ?? "n/a"}`;
+      case "payout": {
+        const amount = payload.amount ? Number(payload.amount).toLocaleString() : "0";
+        return `[${ns}] Payout executed (program ${payload.programId ?? "?"}) · ${amount} NTD · recipient ${payload.actor ?? "wallet"} · proof ${payload.proofId}`;
+      }
       default:
         return `[${ns}] Event for proof ${payload.proofId}`;
     }

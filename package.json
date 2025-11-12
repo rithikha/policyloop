@@ -10,6 +10,7 @@
     "programs:compile": "hardhat compile",
     "programs:deploy:adapter": "hardhat run scripts/programs/deploy-adapter.ts --network localhost",
     "programs:deploy": "hardhat run scripts/programs/deploy-phase2.ts --network localhost",
+    "programs:aggregate": "npx ts-node --project tsconfig.json scripts/programs/metrics/aggregate-weekly.ts",
     "programs:evaluate": "hardhat run scripts/programs/metrics/evaluate-all.ts --network localhost",
     "programs:export": "hardhat run scripts/programs/export-ledger.ts --network localhost",
     "programs:serve": "ts-node --project tsconfig.json scripts/programs/serve-ledger.ts"

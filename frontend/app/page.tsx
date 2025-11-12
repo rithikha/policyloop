@@ -6,6 +6,7 @@ import { FeedWidget } from "../components/FeedWidget";
 import { AppShell } from "../components/AppShell";
 import { EnvironmentGuard } from "../components/EnvironmentGuard";
 import { IngestStatusCard } from "../components/IngestStatusCard";
+import { IngestDatasetCard } from "../components/IngestDatasetCard";
 import { ProgramAutomationCard } from "../components/ProgramAutomationCard";
 import { PolicyLedgerCard } from "../components/PolicyLedgerCard";
 import Link from "next/link";
@@ -16,6 +17,7 @@ export default function HomePage() {
       <EnvironmentGuard>
         <div className="page-grid">
           <IngestStatusCard />
+          <IngestDatasetCard />
           <PublishForm />
           <ProgramAutomationCard />
           <ProofExplorer />

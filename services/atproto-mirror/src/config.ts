@@ -19,7 +19,8 @@ const envSchema = z.object({
   ATPROTO_HANDLE: z.string().min(1),
   ATPROTO_APP_PASSWORD: z.string().min(1),
   CITYOS_NAMESPACE: z.string().min(1),
-  STATION_ALLOWLIST: z.string().optional()
+  STATION_ALLOWLIST: z.string().optional(),
+  PROGRAM_MODULE_ADDRESSES: z.string().optional()
 });
 
 export type MirrorConfig = ReturnType<typeof getConfig>;
@@ -29,8 +30,20 @@ export function getConfig() {
   const stationAllowlist = parsed.STATION_ALLOWLIST
     ? parsed.STATION_ALLOWLIST.split(",").map((item) => item.trim()).filter(Boolean)
     : undefined;
+  const programModules = parsed.PROGRAM_MODULE_ADDRESSES
+    ? parsed.PROGRAM_MODULE_ADDRESSES.split(",")
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+        .map((pair) => {
+          const [id, address] = pair.split(":");
+          if (!id || !address) return null;
+          return { programId: Number(id), address: address as `0x${string}` };
+        })
+        .filter((item): item is { programId: number; address: `0x${string}` } => !!item)
+    : [];
   return {
     ...parsed,
-    stationAllowlist
+    stationAllowlist,
+    programModules
   };
 }

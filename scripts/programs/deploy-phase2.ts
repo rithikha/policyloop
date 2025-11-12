@@ -91,6 +91,8 @@ async function main() {
     modules: deploymentRecord.modules,
   });
 
+  await syncMirrorEnv(registryAddress, deploymentRecord.modules);
+
   console.log("[programs] deployment complete");
 }
 
@@ -107,3 +109,50 @@ main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });
+
+async function syncMirrorEnv(
+  registryAddress: string,
+  modules: Record<string, { address: string; name: string }>
+) {
+  const rootDir = path.resolve(__dirname, "../../");
+  const filePath = path.join(rootDir, "services/atproto-mirror/.env");
+  const entries = Object.entries(modules)
+    .map(([programId, info]) => `${programId}:${info.address}`)
+    .join(",");
+  await updateEnvFile(filePath, {
+    PROGRAM_MODULE_ADDRESSES: entries,
+    FUND_REGISTRY_ADDRESS: registryAddress,
+  });
+  console.log("[programs] updated services/atproto-mirror/.env");
+}
+
+async function updateEnvFile(filePath: string, updates: Record<string, string>) {
+  let content: string;
+  try {
+    content = await fs.readFile(filePath, "utf8");
+  } catch (err) {
+    console.warn(`[programs] skipped ${filePath}: ${err}`);
+    return;
+  }
+
+  const lines = content.split(/\r?\n/);
+  const seen = new Set<string>();
+  const updated = lines.map((line) => {
+    const match = line.match(/^([A-Za-z0-9_]+)=/);
+    if (!match) return line;
+    const key = match[1];
+    if (key in updates) {
+      seen.add(key);
+      return `${key}=${updates[key]}`;
+    }
+    return line;
+  });
+
+  for (const [key, value] of Object.entries(updates)) {
+    if (!seen.has(key)) {
+      updated.push(`${key}=${value}`);
+    }
+  }
+
+  await fs.writeFile(filePath, updated.join("\n"), "utf8");
+}

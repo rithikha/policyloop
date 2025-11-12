@@ -62,8 +62,8 @@ Taipei’s Air Pollution Control Fund (APCF) manages four recurring programs —
 **Main Path**
 
 1. Phase-1 proof exists (`proofId`).
-2. PolicyEngine reads proof via adapter.
-3. Compute metrics (6-h PM₂.₅ avg, coverage ratio, etc.).
+2. Weekly aggregator (shown in the UI) bundles Taipei datasets and computes metrics.
+3. PolicyEngine reads proof + weekly metrics via adapter.
 4. If threshold met → `EligibilityIssued`.
 5. If amount ≤ `autoPayBelow` → mock transfer + `PayoutExecuted`.
 6. Events recorded → `ledger.json` → dashboard.

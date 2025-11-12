@@ -1,0 +1,14 @@
+[
+  {
+    "id": 101,
+    "name": "IoT Coverage Maintenance Fund",
+    "description": "Pays the maintenance vendor every week the network meets MOENV QA/QC thresholds.",
+    "weeklyAllocation": 64230,
+    "minCoveragePermille": 900,
+    "bonusCoveragePermille": 980,
+    "docsUrl": "https://github.com/rithikha/policyloop/blob/main/docs/phase2_aqi_fund_spec.md#iot-weekly-drip",
+    "recipientsFile": "config/programs/iot_recipients.json",
+    "weeklyDataset": "config/programs/iot_weekly_demo.json",
+    "autoApprove": true
+  }
+]

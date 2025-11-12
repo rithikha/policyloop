@@ -1,0 +1,14 @@
+{
+  "generatedAt": "2025-11-11T16:26:56.953Z",
+  "station": "taipei-city",
+  "intervalMinutes": 3,
+  "intervalsSimulated": 302400,
+  "entries": [
+    {
+      "proofId": "0x9d4f943cb5aeda6e5532bb91c829e2c6631a5069513b54f2b51cb3da7ba0d0bd",
+      "stationId": "taipei-iot-01",
+      "coveragePermille": 972,
+      "amountNTD": 64230
+    }
+  ]
+}

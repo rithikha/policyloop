@@ -30,19 +30,9 @@ contract ProgramModule_IoT is ProgramModule_Base {
     }
 
     function _calculateAward(EvaluationProof calldata proof) internal view override returns (uint256) {
-        if (proof.coveragePermille >= bonusCoveragePermille) {
-            return weeklyAllocationNTD;
-        }
-        if (proof.coveragePermille <= minCoveragePermille) {
+        if (proof.coveragePermille < minCoveragePermille) {
             return 0;
         }
-
-        uint256 span = bonusCoveragePermille - minCoveragePermille;
-        if (span == 0) {
-            return weeklyAllocationNTD;
-        }
-
-        uint256 earned = proof.coveragePermille - minCoveragePermille;
-        return (weeklyAllocationNTD * earned) / span;
+        return weeklyAllocationNTD;
     }
 }

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2025-11-11T07:01:43.374Z",
+  "generatedAt": "2025-11-11T16:27:06.175Z",
   "programs": {
     "101": "IoT Coverage Boost",
     "102": "EV Retrofit Incentive",
@@ -12,8 +12,8 @@
       "programId": 104,
       "proofId": "0x68ddf6a90846806ff6b40823f929383cb2ecfe1bf313bcff5ac64b5dd5b4ef0a",
       "amountNTD": 320000,
-      "ts": "2025-11-11T07:02:34.000Z",
-      "txHash": "0x6915abe4e6b7e2062d6fbef2aab904b589e734cf0972b67f71731b8bf3c9c1bf",
+      "ts": "2025-11-11T16:27:20.000Z",
+      "txHash": "0xa765f03a6febef570bbcdfac21be4cf82d5e6a11f0c455c6ea3207eb01238ea3",
       "toWallet": "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc"
     },
     {
@@ -21,8 +21,8 @@
       "programId": 104,
       "proofId": "0x68ddf6a90846806ff6b40823f929383cb2ecfe1bf313bcff5ac64b5dd5b4ef0a",
       "amountNTD": 320000,
-      "ts": "2025-11-11T07:02:34.000Z",
-      "txHash": "0x6915abe4e6b7e2062d6fbef2aab904b589e734cf0972b67f71731b8bf3c9c1bf",
+      "ts": "2025-11-11T16:27:20.000Z",
+      "txHash": "0xa765f03a6febef570bbcdfac21be4cf82d5e6a11f0c455c6ea3207eb01238ea3",
       "toWallet": "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc"
     },
     {
@@ -30,8 +30,8 @@
       "programId": 103,
       "proofId": "0x34aab68cf3cfa54e3a075edaaf709f667635ff1ad6bf484145032e048fae7777",
       "amountNTD": 180000,
-      "ts": "2025-11-11T07:02:33.000Z",
-      "txHash": "0xb016332f5b685eefd6ca470a5d20e55c3ebe0ce59d7d85a9ef5aa6ad61399c9f",
+      "ts": "2025-11-11T16:27:19.000Z",
+      "txHash": "0x27427b4c448b3c25a6a2117d4c684d96729be23c1acb4810f6bb3b8334939d17",
       "toWallet": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65"
     },
     {
@@ -39,8 +39,8 @@
       "programId": 103,
       "proofId": "0x34aab68cf3cfa54e3a075edaaf709f667635ff1ad6bf484145032e048fae7777",
       "amountNTD": 180000,
-      "ts": "2025-11-11T07:02:33.000Z",
-      "txHash": "0xb016332f5b685eefd6ca470a5d20e55c3ebe0ce59d7d85a9ef5aa6ad61399c9f",
+      "ts": "2025-11-11T16:27:19.000Z",
+      "txHash": "0x27427b4c448b3c25a6a2117d4c684d96729be23c1acb4810f6bb3b8334939d17",
       "toWallet": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65"
     },
     {
@@ -48,8 +48,8 @@
       "programId": 102,
       "proofId": "0x75e0175db188795c121886b1386988f96a5bd1e1ad03e692951343b28b031bf4",
       "amountNTD": 250000,
-      "ts": "2025-11-11T07:02:32.000Z",
-      "txHash": "0xc3a090ac4087f185f27ee34d868550aaa635b5414be705a0234adf1d24fb668c",
+      "ts": "2025-11-11T16:27:18.000Z",
+      "txHash": "0x5f9a9b272ef38c4ab360aa9f5c4e01c8dc5f027498470fc8a7e4cd04a3ef799f",
       "toWallet": "0x90F79bf6EB2c4f870365E785982E1f101E93b906"
     },
     {
@@ -57,26 +57,26 @@
       "programId": 102,
       "proofId": "0x75e0175db188795c121886b1386988f96a5bd1e1ad03e692951343b28b031bf4",
       "amountNTD": 250000,
-      "ts": "2025-11-11T07:02:32.000Z",
-      "txHash": "0xc3a090ac4087f185f27ee34d868550aaa635b5414be705a0234adf1d24fb668c",
+      "ts": "2025-11-11T16:27:18.000Z",
+      "txHash": "0x5f9a9b272ef38c4ab360aa9f5c4e01c8dc5f027498470fc8a7e4cd04a3ef799f",
       "toWallet": "0x90F79bf6EB2c4f870365E785982E1f101E93b906"
     },
     {
       "event": "EligibilityIssued",
       "programId": 101,
       "proofId": "0x9d4f943cb5aeda6e5532bb91c829e2c6631a5069513b54f2b51cb3da7ba0d0bd",
-      "amountNTD": 400000,
-      "ts": "2025-11-11T07:02:31.000Z",
-      "txHash": "0x8df89da1ac8520c2e8a13177e2a0998e8d4dd38ba5be220927b3f1ad2bd9e0a3",
+      "amountNTD": 57807,
+      "ts": "2025-11-11T16:27:17.000Z",
+      "txHash": "0x052ca7904e6a1bf3f1a8d07a5b7fd7b46045c2261221f8fd8de77c9a2647c205",
       "toWallet": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
     },
     {
       "event": "PayoutExecuted",
       "programId": 101,
       "proofId": "0x9d4f943cb5aeda6e5532bb91c829e2c6631a5069513b54f2b51cb3da7ba0d0bd",
-      "amountNTD": 400000,
-      "ts": "2025-11-11T07:02:31.000Z",
-      "txHash": "0x8df89da1ac8520c2e8a13177e2a0998e8d4dd38ba5be220927b3f1ad2bd9e0a3",
+      "amountNTD": 57807,
+      "ts": "2025-11-11T16:27:17.000Z",
+      "txHash": "0x052ca7904e6a1bf3f1a8d07a5b7fd7b46045c2261221f8fd8de77c9a2647c205",
       "toWallet": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
     }
   ]

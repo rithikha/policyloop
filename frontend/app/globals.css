@@ -607,6 +607,77 @@ button {
   word-break: break-all;
 }
 
+.dataset-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.dataset-meta div {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.dataset-meta dt {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+}
+
+.dataset-meta dd {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.dataset-url {
+  word-break: break-all;
+}
+
+.dataset-table-wrapper {
+  overflow-x: auto;
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 0.75rem;
+}
+
+.dataset-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  min-width: 800px;
+}
+
+.dataset-table th,
+.dataset-table td {
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.dataset-table th {
+  background: rgba(148, 163, 184, 0.1);
+  font-weight: 600;
+}
+
+.dataset-table td {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.dataset-note {
+  margin-top: 0.6rem;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.dataset-download {
+  color: #38bdf8;
+  margin-left: 0.25rem;
+}
+
 .program-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -634,6 +705,47 @@ button {
   color: #9aa9c1;
 }
 
+.program-spec-link {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #38bdf8;
+  text-decoration: underline;
+}
+
+.automation-controls {
+  margin: 0.75rem 0;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.control-button {
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: transparent;
+  color: #f1f5f9;
+  font-size: 0.85rem;
+}
+
+.control-button.active {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: rgba(56, 189, 248, 0.6);
+}
+
+.control-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.control-status {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #facc15;
+}
+
 .program-stat__metrics {
   margin: 0;
   display: grid;
@@ -655,6 +767,114 @@ button {
 
 .program-stat__metrics dd {
   margin: 0;
+  font-size: 0.95rem;
+}
+
+.automation-status {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+}
+
+.automation-status__label {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.policy-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.policy-checklist li {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+}
+
+.policy-checklist li.pass::before,
+.policy-checklist li.pending::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.policy-checklist li.pass::before {
+  background: #22c55e;
+}
+
+.policy-checklist li.pending::before {
+  background: #facc15;
+}
+
+.program-stat__footnote {
+  margin: 0.5rem 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.recipient-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.recipient-table th,
+.recipient-table td {
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 0.35rem 0.4rem;
+  text-align: left;
+}
+
+.recipient-table th {
+  background: rgba(148, 163, 184, 0.1);
+}
+
+.drip-chart {
+  margin: 0.75rem 0 0.25rem;
+}
+
+.drip-chart__total {
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.drip-chart__segments {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+
+.drip-chart__segment {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 1rem;
+  padding: 0.35rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 120px;
+}
+
+.drip-chart__segment span {
+  font-size: 0.8rem;
+}
+
+.drip-chart__segment strong {
   font-size: 0.95rem;
 }
 

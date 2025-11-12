@@ -6,3 +6,7 @@ export const openDataRegistryAbi = [
 export const attestationRegistryAbi = [
   "event Attested(bytes32 indexed proofId, address indexed reviewer, string note)"
 ] as const;
+
+export const programModuleAbi = [
+  "event PayoutExecuted(uint256 indexed programId, bytes32 indexed proofId, address indexed recipient, uint256 amountNTD)"
+] as const;

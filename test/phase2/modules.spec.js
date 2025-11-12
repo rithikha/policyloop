@@ -61,7 +61,7 @@ describe("Phase 2 — FundRegistry & Program Modules", function () {
     const { registry, iot, recipient } = await deployFixture();
     const proofId = ethers.id("iot-proof-1");
 
-    const expectedPayout = (BigInt(64_230) * BigInt(920 - 900)) / BigInt(80);
+    const expectedPayout = 64_230n;
 
     await expect(
       iot.evaluate({

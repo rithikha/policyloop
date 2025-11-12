@@ -1,6 +1,6 @@
 import { Contract, JsonRpcProvider, Log } from "ethers";
 import { getConfig } from "./config";
-import { openDataRegistryAbi, attestationRegistryAbi } from "./abi";
+import { openDataRegistryAbi, attestationRegistryAbi, programModuleAbi } from "./abi";
 import { AtprotoPoster } from "./atproto";
 
 async function main() {
@@ -99,6 +99,35 @@ async function main() {
       }
     }
   ];
+
+  for (const moduleConfig of config.programModules) {
+    const moduleContract = new Contract(moduleConfig.address, programModuleAbi, provider);
+    const payoutTopic = moduleContract.interface.getEvent("PayoutExecuted")?.topicHash;
+    if (!payoutTopic) continue;
+    watchers.push({
+      name: `payout-${moduleConfig.programId}`,
+      filter: { address: moduleConfig.address, topics: [payoutTopic] },
+      lastProcessedBlock: 0,
+      handler: async (log) => {
+        const parsed = moduleContract.interface.parseLog(log);
+        if (!parsed) return;
+        const { programId, proofId, recipient, amountNTD } = parsed.args as unknown as {
+          programId: bigint;
+          proofId: string;
+          recipient: string;
+          amountNTD: bigint;
+        };
+        await safePost(poster, {
+          kind: "payout",
+          proofId,
+          actor: recipient,
+          amount: amountNTD.toString(),
+          programId: Number(programId),
+          timestamp: Math.floor(Date.now() / 1000)
+        });
+      }
+    });
+  }
 
   const startBlock = await provider.getBlockNumber();
   watchers.forEach((watcher) => {

@@ -25,6 +25,7 @@ type DemoProof = {
     eventsProcessed?: number;
     cemsValidPermille?: number;
     pm25x10?: number;
+    uploadLatencyMs?: number;
   };
 };
 
@@ -49,5 +50,30 @@ export async function readDemoProofs(): Promise<DemoProof[]> {
     return [];
   } catch {
     return [];
+  }
+}
+
+export type WeeklyAggregation = {
+  generatedAt: string;
+  station?: string;
+  intervalMinutes?: number;
+  intervalsSimulated?: number;
+  entries: Array<{
+    proofId: string;
+    stationId: string;
+    coveragePermille: number;
+    amountNTD: number;
+    recipient?: string;
+  }>;
+};
+
+export async function readWeeklyAggregation(relativePath?: string): Promise<WeeklyAggregation | null> {
+  if (!relativePath) return null;
+  const weeklyPath = path.resolve(process.cwd(), "../", relativePath);
+  try {
+    const raw = await fs.readFile(weeklyPath, "utf8");
+    return JSON.parse(raw);
+  } catch {
+    return null;
   }
 }
